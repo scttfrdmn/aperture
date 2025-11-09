@@ -8,16 +8,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- DynamoDB Terraform module with 4 tables
-  - Users and Permissions table with email and ORCID indexes
-  - DOI Registry table with dataset and status indexes
-  - Access Logs table with user and date indexes (90-day TTL)
-  - Budget Tracking table with account and category indexes
-- Auto-scaling configuration for provisioned capacity mode
-- Point-in-time recovery enabled by default
-- Server-side encryption with optional KMS support
-- Comprehensive module documentation with usage examples
-- Updated main.tf to integrate DynamoDB module
+- S3 Buckets Terraform module with 7 purpose-specific buckets
+  - Public Media bucket for datasets with DOIs
+  - Private Media bucket for restricted access datasets
+  - Restricted Media bucket for datasets with access controls
+  - Embargoed Media bucket for datasets under embargo
+  - Processing bucket for temporary media processing (7-day auto-expiration)
+  - Logs bucket for S3 access logs and CloudTrail logs (7-year retention)
+  - Frontend bucket for React application hosting
+- Intelligent tiering configuration for media buckets
+  - Automatic transition to Archive Access tier after 90 days
+  - Automatic transition to Deep Archive Access tier after 180 days
+  - 78% cost savings vs S3 Standard for long-term storage
+- Lifecycle policies for all buckets
+  - Immediate transition to intelligent tiering for media buckets
+  - Noncurrent version expiration (90 days for media, 30 days for frontend)
+  - Processing bucket cleanup after 7 days
+  - Logs retention for 7 years (2555 days)
+- CORS configuration for web access to media and frontend buckets
+- Access logging enabled by default (logs stored in dedicated logs bucket)
+- Versioning enabled for all media buckets and frontend bucket
+- CORS allowed origins configuration variable
+- 7 S3 bucket outputs in main.tf for module integration
 - Cognito User Pool Terraform module with ORCID federation
   - OpenID Connect integration with ORCID (sandbox and production support)
   - 4 RBAC groups (admins, researchers, reviewers, users)
@@ -29,11 +41,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Custom domain support with ACM certificate integration
   - CloudWatch logging for security monitoring
 - ORCID authentication integration variables in main.tf
+- DynamoDB Terraform module with 4 tables
+  - Users and Permissions table with email and ORCID indexes
+  - DOI Registry table with dataset and status indexes
+  - Access Logs table with user and date indexes (90-day TTL)
+  - Budget Tracking table with account and category indexes
+- Auto-scaling configuration for provisioned capacity mode
+- Point-in-time recovery enabled by default
+- Server-side encryption with optional KMS support
+- Comprehensive module documentation with usage examples
+- Updated main.tf to integrate DynamoDB module
 - GitHub Issue #17 for Globus Auth integration roadmap
+- GitHub Issue #19 for S3 buckets module tracking
 
 ### Changed
 - Updated main.tf to comment out unimplemented modules
 - Added DynamoDB table outputs to main configuration
+- Updated S3 module configuration in main.tf with proper parameters
+- Added cors_allowed_origins variable to main configuration
 - Integrated Cognito module with OAuth 2.0 callback URLs
 - Added 5 Cognito outputs (user pool ID, ARN, client IDs, domain, OAuth URL)
 

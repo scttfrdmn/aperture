@@ -4,14 +4,14 @@
 
 terraform {
   required_version = ">= 1.0"
-  
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
   }
-  
+
   backend "s3" {
     # Configure your backend
     # bucket = "your-terraform-state-bucket"
@@ -22,7 +22,7 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
-  
+
   default_tags {
     tags = {
       Project     = "Academic Media Repository"
@@ -112,13 +112,28 @@ variable "cognito_callback_urls" {
   default     = []
 }
 
-# S3 Buckets (TODO: Issue #4)
-# module "s3_buckets" {
-#   source = "./infrastructure/terraform/modules/s3"
-#
-#   project_name = var.project_name
-#   environment  = var.environment
-# }
+variable "cors_allowed_origins" {
+  description = "List of allowed origins for CORS configuration"
+  type        = list(string)
+  default     = ["*"]
+}
+
+# S3 Buckets
+module "s3_buckets" {
+  source = "./infrastructure/terraform/modules/s3"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  enable_versioning = true
+  enable_logging    = true
+
+  cors_allowed_origins = var.cors_allowed_origins
+
+  tags = {
+    ManagedBy = "Terraform"
+  }
+}
 
 # DynamoDB Tables
 module "dynamodb" {
@@ -244,6 +259,44 @@ module "cognito" {
 # }
 
 # Outputs
+
+# S3 Buckets
+output "s3_public_media_bucket_id" {
+  description = "Public media bucket ID"
+  value       = module.s3_buckets.public_media_bucket_id
+}
+
+output "s3_private_media_bucket_id" {
+  description = "Private media bucket ID"
+  value       = module.s3_buckets.private_media_bucket_id
+}
+
+output "s3_restricted_media_bucket_id" {
+  description = "Restricted media bucket ID"
+  value       = module.s3_buckets.restricted_media_bucket_id
+}
+
+output "s3_embargoed_media_bucket_id" {
+  description = "Embargoed media bucket ID"
+  value       = module.s3_buckets.embargoed_media_bucket_id
+}
+
+output "s3_processing_bucket_id" {
+  description = "Processing bucket ID"
+  value       = module.s3_buckets.processing_bucket_id
+}
+
+output "s3_logs_bucket_id" {
+  description = "Logs bucket ID"
+  value       = module.s3_buckets.logs_bucket_id
+}
+
+output "s3_frontend_bucket_id" {
+  description = "Frontend bucket ID"
+  value       = module.s3_buckets.frontend_bucket_id
+}
+
+# DynamoDB Tables
 output "dynamodb_users_table" {
   description = "DynamoDB users table name"
   value       = module.dynamodb.users_table_name
