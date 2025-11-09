@@ -1,0 +1,196 @@
+# Terraform Variables Configuration Template
+# Copy this file to terraform.tfvars and fill in your values
+# NEVER commit terraform.tfvars to version control (contains secrets)
+
+# ============================================================================
+# Required Variables
+# ============================================================================
+
+# AWS Region
+# Choose a region close to your users for lower latency
+# Common options: us-east-1, us-west-2, eu-west-1, ap-southeast-1
+aws_region = "us-east-1"
+
+# Environment
+# Options: dev, staging, prod
+environment = "prod"
+
+# Project Name
+# Used as prefix for all resource names
+# Keep it short and use lowercase with hyphens
+project_name = "academic-media-repo"
+
+# Domain Name
+# Your custom domain for the repository
+# Example: repo.university.edu or data.institution.org
+# You'll need to configure DNS separately
+domain_name = "repo.university.edu"
+
+# DataCite Configuration
+# Get these from https://datacite.org/
+# For testing, use https://api.test.datacite.org/
+datacite_prefix = "10.5555"  # Your institution's DOI prefix
+datacite_username = "YOUR_DATACITE_USERNAME"
+datacite_password = "YOUR_DATACITE_PASSWORD"
+
+# Budget Alert Email
+# Where to send budget alerts when thresholds are exceeded
+budget_alert_email = "admin@university.edu"
+
+# Monthly Budget Limit (USD)
+# Set to your maximum acceptable monthly spend
+# System will alert at 80% and 100% of this value
+monthly_budget_limit = 500
+
+# ============================================================================
+# Optional Variables (with defaults)
+# ============================================================================
+
+# ORCID Configuration (for researcher authentication)
+# Get these from https://orcid.org/developer-tools
+# orcid_client_id = "YOUR_ORCID_CLIENT_ID"
+# orcid_client_secret = "YOUR_ORCID_CLIENT_SECRET"
+
+# Repository Configuration
+# repo_title = "University Research Data Repository"
+# repo_description = "A repository for academic multimedia research data"
+# repo_institution = "University of Example"
+# repo_contact_email = "data-repository@university.edu"
+
+# Storage Configuration
+# Days until data transitions to cheaper storage classes
+# Defaults are optimized for typical academic access patterns
+# lifecycle_standard_to_ia_days = 90
+# lifecycle_ia_to_glacier_days = 365
+# lifecycle_glacier_to_deep_archive_days = 1095
+
+# Processing Configuration
+# Maximum file size for automatic processing (in GB)
+# Larger files can still be uploaded but won't be auto-processed
+# max_processing_file_size_gb = 50
+
+# Generate thumbnails for videos longer than this (in seconds)
+# Set to 0 to always generate thumbnails
+# min_video_duration_for_thumbnails = 10
+
+# Transcribe audio files longer than this (in seconds)
+# Set to 0 to always transcribe
+# Set to very high number to disable transcription
+# min_audio_duration_for_transcription = 60
+# max_audio_duration_for_transcription = 14400  # 4 hours (AWS limit)
+
+# Security Configuration
+# Enable MFA for admin users?
+# admin_mfa_required = true
+
+# Require email verification for new users?
+# email_verification_required = true
+
+# CloudFront Configuration
+# Price class affects geographic distribution of edge locations
+# Options: PriceClass_100 (North America/Europe), PriceClass_200 (adds Asia), PriceClass_All
+# cloudfront_price_class = "PriceClass_100"
+
+# Cache TTL in seconds
+# cloudfront_default_ttl = 86400  # 1 day
+# cloudfront_max_ttl = 31536000   # 1 year
+
+# API Gateway Configuration
+# api_throttle_rate_limit = 1000   # requests per second
+# api_throttle_burst_limit = 2000  # burst capacity
+
+# Logging Configuration
+# Days to retain CloudWatch logs
+# cloudwatch_log_retention_days = 30
+
+# Days to retain S3 access logs
+# access_log_retention_days = 2555  # 7 years for compliance
+
+# Backup Configuration
+# Enable point-in-time recovery for DynamoDB?
+# dynamodb_point_in_time_recovery = true
+
+# Enable S3 versioning for all buckets?
+# s3_versioning_enabled = true
+
+# Tags
+# Additional tags to apply to all resources
+# tags = {
+#   Department    = "Research IT"
+#   CostCenter    = "12345"
+#   Owner         = "Data Repository Team"
+#   Compliance    = "FAIR"
+# }
+
+# ============================================================================
+# Example Configurations by Institution Size
+# ============================================================================
+
+# Small Institution (< 10 TB, < 100 users)
+# monthly_budget_limit = 200
+# cloudfront_price_class = "PriceClass_100"
+# max_processing_file_size_gb = 20
+# lifecycle_standard_to_ia_days = 60
+
+# Medium Institution (10-100 TB, 100-1000 users)
+# monthly_budget_limit = 1000
+# cloudfront_price_class = "PriceClass_200"
+# max_processing_file_size_gb = 50
+# lifecycle_standard_to_ia_days = 90
+
+# Large Institution (> 100 TB, > 1000 users)
+# monthly_budget_limit = 5000
+# cloudfront_price_class = "PriceClass_All"
+# max_processing_file_size_gb = 100
+# lifecycle_standard_to_ia_days = 120
+
+# ============================================================================
+# Notes
+# ============================================================================
+
+# Terraform Backend Configuration
+# It's recommended to use remote state storage (S3 backend)
+# Configure this in main.tf or via command line:
+#
+# terraform init \
+#   -backend-config="bucket=YOUR-STATE-BUCKET" \
+#   -backend-config="key=academic-repo/terraform.tfstate" \
+#   -backend-config="region=us-east-1"
+
+# Sensitive Values
+# NEVER commit this file with real credentials to version control
+# Add terraform.tfvars to .gitignore
+# Consider using AWS Secrets Manager or HashiCorp Vault for production
+
+# Cost Estimation
+# Before applying, run: terraform plan
+# Then use AWS Cost Calculator: https://calculator.aws/
+# Monitor actual costs in AWS Cost Explorer
+
+# Security Best Practices
+# 1. Use unique passwords for DataCite
+# 2. Enable MFA on AWS account
+# 3. Use separate AWS accounts for dev/staging/prod
+# 4. Regularly rotate credentials
+# 5. Enable CloudTrail logging
+# 6. Review IAM policies regularly
+# 7. Use VPC endpoints for private access to S3
+
+# Deployment Steps
+# 1. Copy this file to terraform.tfvars
+# 2. Fill in all required values
+# 3. Review optional values and adjust as needed
+# 4. Run: terraform init
+# 5. Run: terraform plan (review the changes)
+# 6. Run: terraform apply
+# 7. Configure DNS for your domain
+# 8. Deploy frontend to S3
+# 9. Test end-to-end workflow
+
+# Troubleshooting
+# If deployment fails:
+# 1. Check AWS service quotas (especially Lambda, S3)
+# 2. Verify IAM permissions
+# 3. Check region availability (some services not in all regions)
+# 4. Review CloudWatch logs for Lambda functions
+# 5. Ensure DataCite credentials are correct (test in sandbox first)
