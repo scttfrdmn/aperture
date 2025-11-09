@@ -8,6 +8,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- EventBridge Terraform module for event-driven workflows (Issue #4)
+  - Custom event bus for Aperture platform events
+  - S3 object creation triggers for automatic media processing
+  - Scheduled rules for daily lifecycle management (2 AM UTC)
+  - Scheduled rules for weekly budget reports (Monday 9 AM UTC)
+  - CloudWatch alarm monitoring with SNS routing
+  - DynamoDB stream monitoring for DOI registry changes
+  - Custom application events (publication workflow, failed jobs)
+  - Event archive with configurable retention (default 90 days)
+  - Dead Letter Queue support for failed event handling
+  - IAM roles for Step Functions and SNS integration
+  - CloudWatch logging for all EventBridge events
+  - Comprehensive 500+ line documentation with examples
 - S3 Buckets Terraform module with 7 purpose-specific buckets
   - Public Media bucket for datasets with DOIs
   - Private Media bucket for restricted access datasets
@@ -73,6 +86,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cost optimization with PriceClass_100 (North America and Europe)
 - Optional Origin Shield for additional caching layer
 - 4 CloudFront outputs in main.tf (distribution IDs and URLs)
+- Updated main.tf to integrate EventBridge module
 
 ### Changed
 - Updated main.tf to comment out unimplemented modules
