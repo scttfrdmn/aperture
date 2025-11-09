@@ -147,15 +147,31 @@ module "dynamodb" {
   enable_logs_ttl               = true
 }
 
-# CloudFront Distribution (TODO: Issue #3)
-# module "cloudfront" {
-#   source = "./infrastructure/terraform/modules/cloudfront"
-#
-#   project_name         = var.project_name
-#   domain_name          = var.domain_name
-#   frontend_bucket      = module.s3_buckets.frontend_bucket_id
-#   public_media_bucket  = module.s3_buckets.public_media_bucket_id
-# }
+# CloudFront Distribution
+module "cloudfront" {
+  source = "./infrastructure/terraform/modules/cloudfront"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # S3 bucket configuration
+  public_media_bucket_id                   = module.s3_buckets.public_media_bucket_id
+  public_media_bucket_arn                  = module.s3_buckets.public_media_bucket_arn
+  public_media_bucket_regional_domain_name = module.s3_buckets.public_media_bucket_regional_domain_name
+
+  frontend_bucket_id                   = module.s3_buckets.frontend_bucket_id
+  frontend_bucket_arn                  = module.s3_buckets.frontend_bucket_arn
+  frontend_bucket_regional_domain_name = module.s3_buckets.frontend_bucket_regional_domain_name
+
+  logs_bucket_domain_name = module.s3_buckets.logs_bucket_domain_name
+
+  # Cost optimization
+  price_class = "PriceClass_100" # North America and Europe only
+
+  tags = {
+    ManagedBy = "Terraform"
+  }
+}
 
 # Cognito User Pool with ORCID Federation
 module "cognito" {
@@ -317,6 +333,48 @@ output "dynamodb_budget_tracking_table" {
   value       = module.dynamodb.budget_tracking_table_name
 }
 
+# S3 Buckets
+output "s3_public_media_bucket" {
+  description = "S3 public media bucket name"
+  value       = module.s3_buckets.public_media_bucket_name
+}
+
+output "s3_processing_bucket" {
+  description = "S3 processing bucket name"
+  value       = module.s3_buckets.processing_bucket_name
+}
+
+output "s3_frontend_bucket" {
+  description = "S3 frontend bucket name"
+  value       = module.s3_buckets.frontend_bucket_name
+}
+
+output "s3_logs_bucket" {
+  description = "S3 logs bucket name"
+  value       = module.s3_buckets.logs_bucket_name
+}
+
+# CloudFront Distributions
+output "cloudfront_public_media_url" {
+  description = "URL for accessing public media via CloudFront"
+  value       = module.cloudfront.public_media_url
+}
+
+output "cloudfront_frontend_url" {
+  description = "URL for accessing frontend application via CloudFront"
+  value       = module.cloudfront.frontend_url
+}
+
+output "cloudfront_public_media_distribution_id" {
+  description = "CloudFront distribution ID for public media"
+  value       = module.cloudfront.public_media_distribution_id
+}
+
+output "cloudfront_frontend_distribution_id" {
+  description = "CloudFront distribution ID for frontend"
+  value       = module.cloudfront.frontend_distribution_id
+}
+
 # Cognito Outputs
 output "cognito_user_pool_id" {
   description = "Cognito User Pool ID"
@@ -348,7 +406,7 @@ output "cognito_oauth_authorize_url" {
 #   value       = module.api_gateway.api_endpoint
 # }
 #
-# output "cloudfront_domain" {
-#   description = "CloudFront distribution domain"
-#   value       = module.cloudfront.cloudfront_domain
+# output "cognito_client_id" {
+#   description = "Cognito App Client ID"
+#   value       = module.cognito.app_client_id
 # }

@@ -53,6 +53,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated main.tf to integrate DynamoDB module
 - GitHub Issue #17 for Globus Auth integration roadmap
 - GitHub Issue #19 for S3 buckets module tracking
+- CloudFront CDN Terraform module with 2 optimized distributions
+  - Public Media distribution for research datasets and media files
+  - Frontend distribution for React application with SPA routing
+- Origin Access Control (OAC) for secure S3 access
+- Optimized cache behaviors for different content types
+  - Large media files (videos): 7-day cache with Range request support
+  - Thumbnails/processed media: 30-day cache
+  - Metadata JSON files: 1-hour cache
+  - Frontend static assets: 30-day cache with versioning support
+  - SPA routes: Smart routing with index.html fallback
+- S3 bucket policies automatically configured for CloudFront access
+- CloudFront access logging to dedicated S3 logs bucket
+- Custom domain support with ACM certificate integration
+- Geographic restrictions support (whitelist/blacklist)
+- IPv6 enabled by default
+- HTTP/2 and HTTP/3 support
+- Automatic compression for text-based content
+- Cost optimization with PriceClass_100 (North America and Europe)
+- Optional Origin Shield for additional caching layer
+- 4 CloudFront outputs in main.tf (distribution IDs and URLs)
 
 ### Changed
 - Updated main.tf to comment out unimplemented modules
@@ -61,6 +81,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added cors_allowed_origins variable to main configuration
 - Integrated Cognito module with OAuth 2.0 callback URLs
 - Added 5 Cognito outputs (user pool ID, ARN, client IDs, domain, OAuth URL)
+- Integrated CloudFront module with S3 bucket outputs
+- Added CloudFront distribution URLs to outputs
 
 ### Deprecated
 
