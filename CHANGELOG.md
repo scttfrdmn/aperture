@@ -18,10 +18,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Server-side encryption with optional KMS support
 - Comprehensive module documentation with usage examples
 - Updated main.tf to integrate DynamoDB module
+- Cognito User Pool Terraform module with ORCID federation
+  - OpenID Connect integration with ORCID (sandbox and production support)
+  - 4 RBAC groups (admins, researchers, reviewers, users)
+  - Password policy configuration (12+ characters, complexity requirements)
+  - MFA support via TOTP and SMS
+  - Advanced security features (compromised credentials detection)
+  - Risk-based authentication with account takeover protection
+  - Web app client and API client configurations
+  - Custom domain support with ACM certificate integration
+  - CloudWatch logging for security monitoring
+- ORCID authentication integration variables in main.tf
+- GitHub Issue #17 for Globus Auth integration roadmap
 
 ### Changed
 - Updated main.tf to comment out unimplemented modules
 - Added DynamoDB table outputs to main configuration
+- Integrated Cognito module with OAuth 2.0 callback URLs
+- Added 5 Cognito outputs (user pool ID, ARN, client IDs, domain, OAuth URL)
 
 ### Deprecated
 

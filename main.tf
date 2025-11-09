@@ -85,13 +85,40 @@ variable "monthly_budget_limit" {
   default     = 500
 }
 
-# S3 Buckets
-module "s3_buckets" {
-  source = "./infrastructure/terraform/modules/s3"
-
-  project_name = var.project_name
-  environment  = var.environment
+# ORCID OAuth Configuration
+variable "orcid_client_id" {
+  description = "ORCID OAuth client ID"
+  type        = string
+  default     = ""
+  sensitive   = true
 }
+
+variable "orcid_client_secret" {
+  description = "ORCID OAuth client secret"
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "orcid_environment" {
+  description = "ORCID environment (production or sandbox)"
+  type        = string
+  default     = "sandbox"
+}
+
+variable "cognito_callback_urls" {
+  description = "Cognito OAuth callback URLs"
+  type        = list(string)
+  default     = []
+}
+
+# S3 Buckets (TODO: Issue #4)
+# module "s3_buckets" {
+#   source = "./infrastructure/terraform/modules/s3"
+#
+#   project_name = var.project_name
+#   environment  = var.environment
+# }
 
 # DynamoDB Tables
 module "dynamodb" {
@@ -115,14 +142,32 @@ module "dynamodb" {
 #   public_media_bucket  = module.s3_buckets.public_media_bucket_id
 # }
 
-# Cognito User Pool with ORCID Federation (TODO: Issue #2)
-# module "cognito" {
-#   source = "./infrastructure/terraform/modules/cognito"
-#
-#   project_name = var.project_name
-#   environment  = var.environment
-#   domain_name  = var.domain_name
-# }
+# Cognito User Pool with ORCID Federation
+module "cognito" {
+  source = "./infrastructure/terraform/modules/cognito"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # ORCID Configuration
+  enable_orcid        = var.orcid_client_id != ""
+  orcid_client_id     = var.orcid_client_id
+  orcid_client_secret = var.orcid_client_secret
+  orcid_environment   = var.orcid_environment
+
+  # OAuth Configuration
+  callback_urls = var.cognito_callback_urls
+  logout_urls   = var.cognito_callback_urls
+
+  # Email Configuration
+  from_email_address = var.budget_alert_email
+  support_email      = var.budget_alert_email
+
+  # Security (relaxed for sandbox, enforce in production)
+  advanced_security_mode = var.environment == "prod" ? "ENFORCED" : "AUDIT"
+  mfa_configuration      = "OPTIONAL"
+  deletion_protection    = var.environment == "prod" ? true : false
+}
 
 # Lambda Functions (TODO: Issue #5-7)
 # module "lambda_functions" {
@@ -219,6 +264,32 @@ output "dynamodb_budget_tracking_table" {
   value       = module.dynamodb.budget_tracking_table_name
 }
 
+# Cognito Outputs
+output "cognito_user_pool_id" {
+  description = "Cognito User Pool ID"
+  value       = module.cognito.user_pool_id
+}
+
+output "cognito_user_pool_arn" {
+  description = "Cognito User Pool ARN"
+  value       = module.cognito.user_pool_arn
+}
+
+output "cognito_web_app_client_id" {
+  description = "Cognito Web App Client ID"
+  value       = module.cognito.web_app_client_id
+}
+
+output "cognito_user_pool_domain" {
+  description = "Cognito hosted UI domain"
+  value       = module.cognito.user_pool_domain
+}
+
+output "cognito_oauth_authorize_url" {
+  description = "OAuth authorization endpoint"
+  value       = module.cognito.oauth_authorize_url
+}
+
 # output "api_endpoint" {
 #   description = "API Gateway endpoint URL"
 #   value       = module.api_gateway.api_endpoint
@@ -227,14 +298,4 @@ output "dynamodb_budget_tracking_table" {
 # output "cloudfront_domain" {
 #   description = "CloudFront distribution domain"
 #   value       = module.cloudfront.cloudfront_domain
-# }
-#
-# output "cognito_user_pool_id" {
-#   description = "Cognito User Pool ID"
-#   value       = module.cognito.user_pool_id
-# }
-#
-# output "cognito_client_id" {
-#   description = "Cognito App Client ID"
-#   value       = module.cognito.app_client_id
 # }
