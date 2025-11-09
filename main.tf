@@ -242,20 +242,33 @@ module "cognito" {
 #   metadata_query_lambda_arn = module.lambda_functions.metadata_query_lambda_arn
 # }
 
-# EventBridge Rules (TODO: Issue #4)
-# module "eventbridge" {
-#   source = "./infrastructure/terraform/modules/eventbridge"
-#
-#   project_name                    = var.project_name
-#   environment                     = var.environment
-#   media_processing_lambda_arn     = module.lambda_functions.media_processing_lambda_arn
-#   lifecycle_management_lambda_arn = module.lambda_functions.lifecycle_management_lambda_arn
-#   budget_alert_lambda_arn         = module.lambda_functions.budget_alert_lambda_arn
-#
-#   # S3 bucket ARNs for event notifications
-#   public_media_bucket_arn    = module.s3_buckets.public_media_bucket_arn
-#   private_media_bucket_arn   = module.s3_buckets.private_media_bucket_arn
-# }
+# EventBridge Rules
+module "eventbridge" {
+  source = "./infrastructure/terraform/modules/eventbridge"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # S3 Configuration
+  processing_bucket_name = module.s3_buckets.processing_bucket_name
+
+  # DynamoDB Configuration
+  doi_registry_table_name = module.dynamodb.doi_registry_table_name
+
+  # Lambda Functions (will be added when Lambda module is created)
+  # media_processing_lambda_arn = module.lambda_functions.media_processing_lambda_arn
+  # lifecycle_lambda_arn        = module.lambda_functions.lifecycle_lambda_arn
+  # budget_report_lambda_arn    = module.lambda_functions.budget_report_lambda_arn
+
+  # Optional integrations (will be added in future modules)
+  # alert_sns_topic_arn         = module.sns.alerts_topic_arn
+  # dlq_arn                     = module.sqs.dlq_arn
+  # publication_workflow_arn    = module.step_functions.publication_workflow_arn
+
+  tags = {
+    Component = "Event-Driven Workflows"
+  }
+}
 
 # Budget Alerts (TODO: Future)
 # module "budgets" {
@@ -399,6 +412,22 @@ output "cognito_user_pool_domain" {
 output "cognito_oauth_authorize_url" {
   description = "OAuth authorization endpoint"
   value       = module.cognito.oauth_authorize_url
+}
+
+# EventBridge
+output "eventbridge_event_bus_name" {
+  description = "EventBridge custom event bus name"
+  value       = module.eventbridge.event_bus_name
+}
+
+output "eventbridge_event_bus_arn" {
+  description = "EventBridge custom event bus ARN"
+  value       = module.eventbridge.event_bus_arn
+}
+
+output "eventbridge_summary" {
+  description = "Summary of EventBridge resources"
+  value       = module.eventbridge.summary
 }
 
 # output "api_endpoint" {
