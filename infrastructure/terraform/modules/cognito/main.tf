@@ -361,21 +361,21 @@ resource "aws_cognito_risk_configuration" "main" {
       source_arn = var.ses_email_identity
 
       block_email {
-        subject      = "Account Temporarily Blocked"
-        html_body    = "Your account has been temporarily blocked due to suspicious activity. Please contact support at ${var.support_email}."
-        text_body    = "Your account has been temporarily blocked due to suspicious activity. Please contact support at ${var.support_email}."
+        subject   = "Account Temporarily Blocked"
+        html_body = "Your account has been temporarily blocked due to suspicious activity. Please contact support at ${var.support_email}."
+        text_body = "Your account has been temporarily blocked due to suspicious activity. Please contact support at ${var.support_email}."
       }
 
       mfa_email {
-        subject      = "MFA Required"
-        html_body    = "We detected unusual sign-in activity. For your security, please complete MFA."
-        text_body    = "We detected unusual sign-in activity. For your security, please complete MFA."
+        subject   = "MFA Required"
+        html_body = "We detected unusual sign-in activity. For your security, please complete MFA."
+        text_body = "We detected unusual sign-in activity. For your security, please complete MFA."
       }
 
       no_action_email {
-        subject      = "New Sign-in Location Detected"
-        html_body    = "We detected a sign-in from a new location."
-        text_body    = "We detected a sign-in from a new location."
+        subject   = "New Sign-in Location Detected"
+        html_body = "We detected a sign-in from a new location."
+        text_body = "We detected a sign-in from a new location."
       }
     }
   }
