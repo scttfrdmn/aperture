@@ -1,0 +1,133 @@
+name: Deploy Infrastructure
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy'
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      terraform_action:
+        description: 'Terraform action'
+        required: true
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+
+permissions:
+  contents: read
+  id-token: write  # Required for OIDC authentication with AWS
+
+jobs:
+  deploy:
+    name: Deploy to ${{ inputs.environment }}
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: "~1.5"
+
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+        aws-region: ${{ secrets.AWS_REGION || 'us-east-1' }}
+
+    - name: Terraform Init
+      run: terraform init
+      env:
+        TF_VAR_environment: ${{ inputs.environment }}
+
+    - name: Terraform Plan
+      if: inputs.terraform_action == 'plan' || inputs.terraform_action == 'apply'
+      run: terraform plan -var-file="environments/${{ inputs.environment }}.tfvars" -out=tfplan
+      env:
+        TF_VAR_environment: ${{ inputs.environment }}
+        TF_VAR_datacite_username: ${{ secrets.DATACITE_USERNAME }}
+        TF_VAR_datacite_password: ${{ secrets.DATACITE_PASSWORD }}
+        TF_VAR_orcid_client_id: ${{ secrets.ORCID_CLIENT_ID }}
+        TF_VAR_orcid_client_secret: ${{ secrets.ORCID_CLIENT_SECRET }}
+
+    - name: Upload Terraform Plan
+      if: inputs.terraform_action == 'plan' || inputs.terraform_action == 'apply'
+      uses: actions/upload-artifact@v4
+      with:
+        name: tfplan-${{ inputs.environment }}
+        path: tfplan
+        retention-days: 5
+
+    - name: Terraform Apply
+      if: inputs.terraform_action == 'apply'
+      run: terraform apply -auto-approve tfplan
+      env:
+        TF_VAR_environment: ${{ inputs.environment }}
+
+    - name: Terraform Destroy Plan
+      if: inputs.terraform_action == 'destroy'
+      run: terraform plan -destroy -var-file="environments/${{ inputs.environment }}.tfvars" -out=tfplan-destroy
+      env:
+        TF_VAR_environment: ${{ inputs.environment }}
+        TF_VAR_datacite_username: ${{ secrets.DATACITE_USERNAME }}
+        TF_VAR_datacite_password: ${{ secrets.DATACITE_PASSWORD }}
+        TF_VAR_orcid_client_id: ${{ secrets.ORCID_CLIENT_ID }}
+        TF_VAR_orcid_client_secret: ${{ secrets.ORCID_CLIENT_SECRET }}
+
+    - name: Manual Approval for Destroy
+      if: inputs.terraform_action == 'destroy'
+      uses: trstringer/manual-approval@v1
+      with:
+        secret: ${{ github.TOKEN }}
+        approvers: scttfrdmn
+        minimum-approvals: 1
+        issue-title: "Approve Terraform Destroy for ${{ inputs.environment }}"
+        issue-body: "Please approve destruction of ${{ inputs.environment }} infrastructure"
+
+    - name: Terraform Destroy
+      if: inputs.terraform_action == 'destroy'
+      run: terraform apply -auto-approve tfplan-destroy
+      env:
+        TF_VAR_environment: ${{ inputs.environment }}
+
+    - name: Terraform Output
+      if: inputs.terraform_action == 'apply'
+      run: terraform output -json > terraform-outputs.json
+
+    - name: Upload Terraform Outputs
+      if: inputs.terraform_action == 'apply'
+      uses: actions/upload-artifact@v4
+      with:
+        name: terraform-outputs-${{ inputs.environment }}
+        path: terraform-outputs.json
+        retention-days: 30
+
+  notify:
+    name: Notify Deployment Status
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+    - name: Deployment Success
+      if: needs.deploy.result == 'success'
+      run: |
+        echo "✅ Deployment to ${{ inputs.environment }} completed successfully"
+        echo "Action: ${{ inputs.terraform_action }}"
+
+    - name: Deployment Failure
+      if: needs.deploy.result == 'failure'
+      run: |
+        echo "❌ Deployment to ${{ inputs.environment }} failed"
+        echo "Action: ${{ inputs.terraform_action }}"
+        exit 1

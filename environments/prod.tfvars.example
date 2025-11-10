@@ -1,0 +1,35 @@
+# Production Environment Configuration
+# Copy this file to prod.tfvars and fill in your values
+# DO NOT commit prod.tfvars with real credentials!
+
+# AWS Configuration
+aws_region = "us-east-1"
+environment = "prod"
+project_name = "aperture"
+
+# Domain Configuration
+domain_name = "repo.university.edu"
+
+# DataCite Configuration (production)
+datacite_prefix = "10.XXXX"  # Your institution's DataCite prefix
+# datacite_username = ""  # Set via environment variable or GitHub secret
+# datacite_password = ""  # Set via environment variable or GitHub secret
+
+# Budget Configuration
+budget_alert_email = "devops@university.edu"
+monthly_budget_limit = 500  # USD - production budget
+
+# ORCID Configuration (production)
+orcid_environment = "production"
+# orcid_client_id = ""      # Set via environment variable or GitHub secret
+# orcid_client_secret = ""  # Set via environment variable or GitHub secret
+
+# OAuth Configuration
+cognito_callback_urls = [
+  "https://repo.university.edu/callback"
+]
+
+# CORS Configuration
+cors_allowed_origins = [
+  "https://repo.university.edu"
+]

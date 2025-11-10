@@ -66,6 +66,64 @@ jobs:
       run: terraform validate
       working-directory: infrastructure/terraform/modules/eventbridge
 
+    - name: Terraform Init (Lambda Module)
+      run: terraform init -backend=false
+      working-directory: infrastructure/terraform/modules/lambda
+
+    - name: Terraform Validate (Lambda Module)
+      run: terraform validate
+      working-directory: infrastructure/terraform/modules/lambda
+
+    - name: Terraform Init (API Gateway Module)
+      run: terraform init -backend=false
+      working-directory: infrastructure/terraform/modules/api-gateway
+
+    - name: Terraform Validate (API Gateway Module)
+      run: terraform validate
+      working-directory: infrastructure/terraform/modules/api-gateway
+
+  lambda-tests:
+    name: Lambda Function Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies - Auth Lambda
+      run: |
+        cd lambda/auth
+        pip install -r requirements.txt
+        pip install pytest boto3 moto
+
+    - name: Install dependencies - Presigned URLs Lambda
+      run: |
+        cd lambda/presigned-urls
+        pip install -r requirements.txt
+        pip install pytest boto3 moto
+
+    - name: Install dependencies - DOI Minting Lambda
+      run: |
+        cd lambda/doi-minting
+        pip install -r requirements.txt
+        pip install pytest boto3 moto requests-mock
+
+    - name: Run Python linting
+      run: |
+        pip install pylint
+        find lambda -name "*.py" -exec pylint --disable=C,R,W {} + || true
+
+    - name: Check Python syntax
+      run: |
+        python -m py_compile lambda/auth/handler.py
+        python -m py_compile lambda/presigned-urls/handler.py
+        python -m py_compile lambda/doi-minting/handler.py
+
   terraform-docs:
     name: Documentation Check
     runs-on: ubuntu-latest

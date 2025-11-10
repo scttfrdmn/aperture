@@ -1,0 +1,35 @@
+# Staging Environment Configuration
+# Copy this file to staging.tfvars and fill in your values
+# DO NOT commit staging.tfvars with real credentials!
+
+# AWS Configuration
+aws_region = "us-east-1"
+environment = "staging"
+project_name = "aperture"
+
+# Domain Configuration
+domain_name = "staging.repo.university.edu"
+
+# DataCite Configuration (can use test or production)
+datacite_prefix = "10.5555"  # Your DataCite prefix
+# datacite_username = ""  # Set via environment variable or GitHub secret
+# datacite_password = ""  # Set via environment variable or GitHub secret
+
+# Budget Configuration
+budget_alert_email = "devops@university.edu"
+monthly_budget_limit = 300  # USD - moderate limit for staging
+
+# ORCID Configuration
+orcid_environment = "production"  # Use production ORCID for staging
+# orcid_client_id = ""      # Set via environment variable or GitHub secret
+# orcid_client_secret = ""  # Set via environment variable or GitHub secret
+
+# OAuth Configuration
+cognito_callback_urls = [
+  "https://staging.repo.university.edu/callback"
+]
+
+# CORS Configuration
+cors_allowed_origins = [
+  "https://staging.repo.university.edu"
+]
