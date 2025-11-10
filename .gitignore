@@ -60,3 +60,4 @@ temp/
 # Config files with secrets
 terraform.tfvars
 *-credentials.json
+mnt/

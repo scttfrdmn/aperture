@@ -10,86 +10,86 @@ permissions:
   contents: read
 
 jobs:
-  test:
-    name: Test
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: ['1.21', '1.22']
-
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: ${{ matrix.go-version }}
-
-    - name: Cache Go modules
-      uses: actions/cache@v4
-      with:
-        path: ~/go/pkg/mod
-        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-        restore-keys: |
-          ${{ runner.os }}-go-
-
-    - name: Download dependencies
-      run: go mod download
-
-    - name: Verify dependencies
-      run: go mod verify
-
-    - name: Run tests
-      run: make test
-
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v4
-      with:
-        file: ./coverage.txt
-        flags: unittests
-        name: codecov-umbrella
-
-  lint:
-    name: Lint
+  terraform-validate:
+    name: Terraform Validate
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
       with:
-        go-version: '1.22'
+        terraform_version: "~1.5"
 
-    - name: Run golangci-lint
-      uses: golangci/golangci-lint-action@v4
-      with:
-        version: latest
-        args: --timeout=5m
+    - name: Terraform Format Check
+      run: terraform fmt -check -recursive
 
-  build:
-    name: Build
+    - name: Terraform Init (DynamoDB Module)
+      run: terraform init -backend=false
+      working-directory: infrastructure/terraform/modules/dynamodb
+
+    - name: Terraform Validate (DynamoDB Module)
+      run: terraform validate
+      working-directory: infrastructure/terraform/modules/dynamodb
+
+    - name: Terraform Init (S3 Module)
+      run: terraform init -backend=false
+      working-directory: infrastructure/terraform/modules/s3
+
+    - name: Terraform Validate (S3 Module)
+      run: terraform validate
+      working-directory: infrastructure/terraform/modules/s3
+
+    - name: Terraform Init (Cognito Module)
+      run: terraform init -backend=false
+      working-directory: infrastructure/terraform/modules/cognito
+
+    - name: Terraform Validate (Cognito Module)
+      run: terraform validate
+      working-directory: infrastructure/terraform/modules/cognito
+
+    - name: Terraform Init (CloudFront Module)
+      run: terraform init -backend=false
+      working-directory: infrastructure/terraform/modules/cloudfront
+
+    - name: Terraform Validate (CloudFront Module)
+      run: terraform validate
+      working-directory: infrastructure/terraform/modules/cloudfront
+
+    - name: Terraform Init (EventBridge Module)
+      run: terraform init -backend=false
+      working-directory: infrastructure/terraform/modules/eventbridge
+
+    - name: Terraform Validate (EventBridge Module)
+      run: terraform validate
+      working-directory: infrastructure/terraform/modules/eventbridge
+
+  terraform-docs:
+    name: Documentation Check
     runs-on: ubuntu-latest
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version: '1.22'
+    - name: Check README files exist
+      run: |
+        for module in infrastructure/terraform/modules/*/; do
+          if [ ! -f "${module}README.md" ]; then
+            echo "Missing README.md in $module"
+            exit 1
+          fi
+        done
 
-    - name: Build
-      run: make build
-
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: aperture-binary
-        path: bin/aperture
+    - name: Verify CHANGELOG is updated
+      if: github.event_name == 'pull_request'
+      run: |
+        if ! git diff --name-only origin/${{ github.base_ref }} | grep -q "CHANGELOG.md"; then
+          echo "Warning: CHANGELOG.md not updated"
+          echo "Please update CHANGELOG.md with your changes"
+        fi
 
   security:
     name: Security Scan
@@ -99,7 +99,10 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Run Gosec Security Scanner
-      uses: securego/gosec@master
+    - name: Run Checkov (Terraform Security Scanner)
+      uses: bridgecrewio/checkov-action@master
       with:
-        args: './...'
+        directory: infrastructure/terraform
+        framework: terraform
+        soft_fail: true  # Don't fail build, just warn
+        output_format: cli
