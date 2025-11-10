@@ -246,24 +246,44 @@ module "lambda_functions" {
   }
 }
 
-# API Gateway (TODO: Future)
-# module "api_gateway" {
-#   source = "./infrastructure/terraform/modules/api-gateway"
-#
-#   project_name            = var.project_name
-#   environment             = var.environment
-#   cognito_user_pool_arn   = module.cognito.user_pool_arn
-#
-#   # Lambda function ARNs
-#   auth_lambda_arn         = module.lambda_functions.auth_lambda_arn
-#   doi_minting_lambda_arn  = module.lambda_functions.doi_minting_lambda_arn
-#   presigned_url_lambda_arn = module.lambda_functions.presigned_url_lambda_arn
-#   access_control_lambda_arn = module.lambda_functions.access_control_lambda_arn
-#   bulk_upload_lambda_arn  = module.lambda_functions.bulk_upload_lambda_arn
-#   oai_pmh_lambda_arn      = module.lambda_functions.oai_pmh_lambda_arn
-#   extraction_lambda_arn   = module.lambda_functions.extraction_lambda_arn
-#   metadata_query_lambda_arn = module.lambda_functions.metadata_query_lambda_arn
-# }
+# API Gateway
+module "api_gateway" {
+  source = "./infrastructure/terraform/modules/api-gateway"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Cognito Configuration
+  cognito_user_pool_id  = module.cognito.user_pool_id
+  cognito_user_pool_arn = module.cognito.user_pool_arn
+  cognito_app_client_id = module.cognito.web_app_client_id
+
+  # Auth Lambda
+  auth_lambda_name       = module.lambda_functions.auth_lambda_name
+  auth_lambda_arn        = module.lambda_functions.auth_lambda_arn
+  auth_lambda_invoke_arn = module.lambda_functions.auth_lambda_invoke_arn
+
+  # Presigned URLs Lambda
+  presigned_urls_lambda_name       = module.lambda_functions.presigned_urls_lambda_name
+  presigned_urls_lambda_arn        = module.lambda_functions.presigned_urls_lambda_arn
+  presigned_urls_lambda_invoke_arn = module.lambda_functions.presigned_urls_lambda_invoke_arn
+
+  # DOI Minting Lambda
+  doi_minting_lambda_name       = module.lambda_functions.doi_minting_lambda_name
+  doi_minting_lambda_arn        = module.lambda_functions.doi_minting_lambda_arn
+  doi_minting_lambda_invoke_arn = module.lambda_functions.doi_minting_lambda_invoke_arn
+
+  # CORS Configuration
+  cors_allowed_origins = var.cors_allowed_origins
+
+  # Throttling
+  throttling_burst_limit = 500
+  throttling_rate_limit  = 1000
+
+  tags = {
+    Component = "REST API"
+  }
+}
 
 # EventBridge Rules
 module "eventbridge" {
@@ -474,12 +494,28 @@ output "eventbridge_summary" {
   value       = module.eventbridge.summary
 }
 
-# output "api_endpoint" {
-#   description = "API Gateway endpoint URL"
-#   value       = module.api_gateway.api_endpoint
-# }
-#
-# output "cognito_client_id" {
-#   description = "Cognito App Client ID"
-#   value       = module.cognito.app_client_id
-# }
+# API Gateway
+output "api_gateway_endpoint" {
+  description = "API Gateway endpoint URL"
+  value       = module.api_gateway.api_endpoint
+}
+
+output "api_gateway_invoke_url" {
+  description = "API Gateway stage invoke URL (use this for API calls)"
+  value       = module.api_gateway.stage_invoke_url
+}
+
+output "api_gateway_id" {
+  description = "API Gateway ID"
+  value       = module.api_gateway.api_id
+}
+
+output "api_gateway_routes" {
+  description = "API Gateway routes"
+  value       = module.api_gateway.routes
+}
+
+output "api_gateway_summary" {
+  description = "Summary of API Gateway resources"
+  value       = module.api_gateway.summary
+}

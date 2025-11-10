@@ -8,6 +8,47 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- CI/CD Pipeline with GitHub Actions workflows (Issue #15)
+  - CI workflow for automated testing on push/PR
+    - Terraform validation for all 7 modules
+    - Python Lambda syntax checking and linting
+    - Documentation verification (README, CHANGELOG)
+    - Security scanning with Checkov
+  - Terraform PR workflow for plan preview
+    - Automatic Terraform plan on PR
+    - Plan results posted as PR comments
+    - Format, init, validate, and plan status
+  - Deployment workflow for infrastructure management
+    - Manual deployment with environment selection (dev/staging/prod)
+    - Support for plan, apply, and destroy operations
+    - AWS OIDC authentication (no access keys needed)
+    - Manual approval required for destroy operations
+    - Artifact uploads (plans, outputs)
+  - Environment configuration templates
+    - dev.tfvars.example, staging.tfvars.example, prod.tfvars.example
+    - Separate environments directory structure
+    - .gitignore updated to protect secrets
+  - Comprehensive 400+ line CI/CD documentation
+    - Setup instructions for AWS OIDC and GitHub secrets
+    - Usage examples for all workflows
+    - Security best practices
+    - Troubleshooting guide
+- API Gateway Terraform module with HTTP API (v2) for REST endpoints (Issue #26)
+  - HTTP API (API Gateway v2) with 70% cost savings vs REST API (v1)
+  - Cognito JWT authorizer for protected endpoints
+  - 9 API routes exposing Lambda functions
+    - Authentication: login (public), refresh (public), logout (protected), verify (protected)
+    - Presigned URLs: generate (protected), batch (protected)
+    - DOI management: mint (protected), update (protected), delete (protected)
+  - CORS configuration for web client access
+  - API throttling (500 burst, 1000 req/sec)
+  - CloudWatch access logging with JSON formatting (90-day retention)
+  - Lambda permissions for API Gateway invocation
+  - Optional custom domain support with ACM
+  - Auto-deploy stage configuration
+  - Comprehensive 300+ line module documentation
+  - Cost estimate: ~$1.50/month for 1M requests
+- API Gateway outputs in main.tf (endpoint, invoke URL, routes, summary)
 - Lambda Functions Terraform module with 3 serverless backend functions (Issue #5)
   - Auth Lambda for user authentication with AWS Cognito
     - Operations: login, refresh, logout, verify
@@ -123,6 +164,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added CloudFront distribution URLs to outputs
 - Integrated Lambda module with Cognito, S3, and DynamoDB dependencies
 - Added 4 Lambda function outputs (auth, presigned URLs, DOI minting, summary)
+- Integrated API Gateway module with Cognito and Lambda functions
+- Added 5 API Gateway outputs (endpoint, invoke URL, ID, routes, summary)
 
 ### Deprecated
 
