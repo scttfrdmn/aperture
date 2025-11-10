@@ -200,28 +200,51 @@ module "cognito" {
   deletion_protection    = var.environment == "prod" ? true : false
 }
 
-# Lambda Functions (TODO: Issue #5-7)
-# module "lambda_functions" {
-#   source = "./infrastructure/terraform/modules/lambda"
-#
-#   project_name           = var.project_name
-#   environment            = var.environment
-#   cognito_user_pool_id   = module.cognito.user_pool_id
-#   doi_registry_table     = module.dynamodb.doi_registry_table_name
-#   users_table            = module.dynamodb.users_table_name
-#   access_logs_table      = module.dynamodb.access_logs_table_name
-#   budget_tracking_table  = module.dynamodb.budget_tracking_table_name
-#   datacite_prefix        = var.datacite_prefix
-#   datacite_username      = var.datacite_username
-#   datacite_password      = var.datacite_password
-#
-#   # S3 bucket names
-#   public_media_bucket    = module.s3_buckets.public_media_bucket_id
-#   private_media_bucket   = module.s3_buckets.private_media_bucket_id
-#   restricted_media_bucket = module.s3_buckets.restricted_media_bucket_id
-#   embargoed_media_bucket = module.s3_buckets.embargoed_media_bucket_id
-#   processing_bucket      = module.s3_buckets.processing_bucket_id
-# }
+# Lambda Functions
+module "lambda_functions" {
+  source = "./infrastructure/terraform/modules/lambda"
+
+  project_name = var.project_name
+  environment  = var.environment
+
+  # Cognito Configuration
+  cognito_user_pool_id  = module.cognito.user_pool_id
+  cognito_user_pool_arn = module.cognito.user_pool_arn
+  cognito_app_client_id = module.cognito.web_app_client_id
+
+  # S3 Buckets
+  public_media_bucket_name     = module.s3_buckets.public_media_bucket_name
+  public_media_bucket_arn      = module.s3_buckets.public_media_bucket_arn
+  private_media_bucket_name    = module.s3_buckets.private_media_bucket_name
+  private_media_bucket_arn     = module.s3_buckets.private_media_bucket_arn
+  restricted_media_bucket_name = module.s3_buckets.restricted_media_bucket_name
+  restricted_media_bucket_arn  = module.s3_buckets.restricted_media_bucket_arn
+  embargoed_media_bucket_name  = module.s3_buckets.embargoed_media_bucket_name
+  embargoed_media_bucket_arn   = module.s3_buckets.embargoed_media_bucket_arn
+
+  # DynamoDB Tables
+  doi_registry_table_name    = module.dynamodb.doi_registry_table_name
+  doi_registry_table_arn     = module.dynamodb.doi_registry_table_arn
+  users_table_name           = module.dynamodb.users_table_name
+  users_table_arn            = module.dynamodb.users_table_arn
+  access_logs_table_name     = module.dynamodb.access_logs_table_name
+  access_logs_table_arn      = module.dynamodb.access_logs_table_arn
+  budget_tracking_table_name = module.dynamodb.budget_tracking_table_name
+  budget_tracking_table_arn  = module.dynamodb.budget_tracking_table_arn
+
+  # DataCite Configuration
+  datacite_username = var.datacite_username
+  datacite_password = var.datacite_password
+  doi_prefix        = var.datacite_prefix
+  repo_base_url     = "https://${var.domain_name}"
+
+  # API Gateway integration (will be added when API Gateway module is created)
+  # api_gateway_execution_arn = module.api_gateway.execution_arn
+
+  tags = {
+    Component = "Backend Lambda Functions"
+  }
+}
 
 # API Gateway (TODO: Future)
 # module "api_gateway" {
@@ -412,6 +435,27 @@ output "cognito_user_pool_domain" {
 output "cognito_oauth_authorize_url" {
   description = "OAuth authorization endpoint"
   value       = module.cognito.oauth_authorize_url
+}
+
+# Lambda Functions
+output "auth_lambda_arn" {
+  description = "Auth Lambda function ARN"
+  value       = module.lambda_functions.auth_lambda_arn
+}
+
+output "presigned_urls_lambda_arn" {
+  description = "Presigned URLs Lambda function ARN"
+  value       = module.lambda_functions.presigned_urls_lambda_arn
+}
+
+output "doi_minting_lambda_arn" {
+  description = "DOI minting Lambda function ARN"
+  value       = module.lambda_functions.doi_minting_lambda_arn
+}
+
+output "lambda_summary" {
+  description = "Summary of Lambda functions"
+  value       = module.lambda_functions.summary
 }
 
 # EventBridge

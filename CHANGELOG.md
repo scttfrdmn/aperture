@@ -8,6 +8,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Lambda Functions Terraform module with 3 serverless backend functions (Issue #5)
+  - Auth Lambda for user authentication with AWS Cognito
+    - Operations: login, refresh, logout, verify
+    - JWT token validation and management
+    - Runtime: Python 3.11, Timeout: 30s, Memory: 256 MB
+  - Presigned URLs Lambda for temporary S3 access with RBAC
+    - Single and batch URL generation (up to 100 URLs)
+    - Access control for public/private/restricted/embargoed buckets
+    - Dataset-specific permission checking via DynamoDB
+    - Embargo date validation for time-based access control
+    - Access logging to DynamoDB for audit trails
+    - Runtime: Python 3.11, Timeout: 30s, Memory: 256 MB
+  - DOI Minting Lambda for DataCite integration
+    - Operations: mint, update, delete DOIs
+    - DataCite API integration for DOI lifecycle management
+    - DynamoDB registry for DOI tracking
+    - Runtime: Python 3.11, Timeout: 60s, Memory: 512 MB
+  - IAM roles with least-privilege policies for each function
+  - CloudWatch log groups with 90-day retention
+  - Terraform archive provider for Lambda packaging
+  - API Gateway integration support (optional)
+  - Comprehensive 160+ line module documentation
+  - Cost estimate: ~$21.50/month for 1M requests
+- Lambda function outputs in main.tf (ARNs and summary)
 - EventBridge Terraform module for event-driven workflows (Issue #4)
   - Custom event bus for Aperture platform events
   - S3 object creation triggers for automatic media processing
@@ -97,6 +121,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added 5 Cognito outputs (user pool ID, ARN, client IDs, domain, OAuth URL)
 - Integrated CloudFront module with S3 bucket outputs
 - Added CloudFront distribution URLs to outputs
+- Integrated Lambda module with Cognito, S3, and DynamoDB dependencies
+- Added 4 Lambda function outputs (auth, presigned URLs, DOI minting, summary)
 
 ### Deprecated
 
