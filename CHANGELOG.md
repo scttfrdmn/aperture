@@ -8,6 +8,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- React Frontend with AWS Cloudscape Design System (Issue #8)
+  - Modern web interface for dataset management
+  - User authentication with AWS Cognito and ORCID
+  - Dataset browse page with search and filtering
+  - Dataset detail page with metadata and file listing
+  - Upload page with multi-file support and metadata form
+  - DOI management interface for minting and managing DOIs
+  - User profile page with permissions display
+  - Role-based access control (admins, researchers, reviewers, users)
+  - TypeScript for type safety
+  - Vite for fast development and optimized builds
+  - AWS Amplify integration for Cognito authentication
+  - Axios API service with interceptors
+  - Protected routes with authentication checks
+  - Responsive layout with AWS Cloudscape components
+  - Environment configuration templates
+  - Comprehensive 300+ line README with setup instructions
 - CI/CD Pipeline with GitHub Actions workflows (Issue #15)
   - CI workflow for automated testing on push/PR
     - Terraform validation for all 7 modules
