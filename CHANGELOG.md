@@ -8,6 +8,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- AWS Bedrock AI Integration for archaeological research analysis (Issue #10)
+  - Bedrock Analysis Lambda function with 7 AI operations
+    - `analyze_image`: Detailed visual analysis using Claude 3 Sonnet vision
+    - `extract_metadata`: CIDOC-CRM compliant metadata extraction
+    - `classify_artifact`: Artifact type, period, culture, and material identification
+    - `generate_description`: Publication-ready descriptions (academic, catalog, public styles)
+    - `generate_embeddings`: Vector embeddings for similarity search via Titan Embed
+    - `extract_text`: OCR for inscriptions, field notes, and labels
+    - `analyze_batch`: Batch processing for up to 10 images
+  - Integration with Anthropic Claude 3 Sonnet for vision-capable LLM analysis
+  - Integration with Amazon Titan Embed Image for vector embeddings
+  - S3 read access across all 4 media buckets (public, private, restricted, embargoed)
+  - IAM role with least-privilege permissions for Bedrock and S3
+  - Runtime: Python 3.11, Timeout: 120s, Memory: 1024 MB
+  - CloudWatch logging for analysis operations
+  - Comprehensive error handling and validation
+  - Support for custom analysis prompts and parameters
+  - Archaeological focus with artifact-specific classifications
+- API Gateway routes for Bedrock AI operations
+  - 7 new protected endpoints under `/ai/*`
+  - JWT authentication via Cognito for all AI routes
+  - Request/response logging for analysis operations
+  - Total routes increased from 9 to 16 (2 public, 14 protected)
+- Frontend AI Analysis page and features
+  - AI Analysis page at `/ai-analysis` with operation selection
+  - Bucket and object key selection interface
+  - Custom prompt input for detailed analysis
+  - Results visualization with expandable sections
+  - JSON metadata viewer with syntax highlighting
+  - Artifact classification display with confidence scores
+  - Batch processing interface (future enhancement)
+  - Tabs for analysis and AI capabilities documentation
+  - API service methods for all 7 AI operations
+  - Navigation sidebar entry under "AI Analysis"
+  - Home page quick action card for AI Analysis
+  - Updated home page description to highlight AI capabilities
+- Comprehensive AWS Bedrock integration documentation (docs/AWS-BEDROCK-INTEGRATION.md)
+  - 700+ line guide covering all AI features
+  - Architecture diagrams and component descriptions
+  - Detailed API endpoint documentation with request/response examples
+  - Lambda function configuration and IAM permissions reference
+  - Frontend integration guide with code examples
+  - Best practices for image quality and prompt engineering
+  - Cost analysis with monthly estimates ($2-$180/month based on usage)
+  - Limitations and future enhancements roadmap
+  - Troubleshooting guide and support resources
 - React Frontend with AWS Cloudscape Design System (Issue #8)
   - Modern web interface for dataset management
   - User authentication with AWS Cognito and ORCID
@@ -53,10 +99,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - API Gateway Terraform module with HTTP API (v2) for REST endpoints (Issue #26)
   - HTTP API (API Gateway v2) with 70% cost savings vs REST API (v1)
   - Cognito JWT authorizer for protected endpoints
-  - 9 API routes exposing Lambda functions
+  - 16 API routes exposing Lambda functions
     - Authentication: login (public), refresh (public), logout (protected), verify (protected)
     - Presigned URLs: generate (protected), batch (protected)
     - DOI management: mint (protected), update (protected), delete (protected)
+    - AI Analysis: analyze-image, extract-metadata, classify-artifact, generate-description, generate-embeddings, extract-text, analyze-batch (all protected)
   - CORS configuration for web client access
   - API throttling (500 burst, 1000 req/sec)
   - CloudWatch access logging with JSON formatting (90-day retention)
@@ -66,7 +113,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Comprehensive 300+ line module documentation
   - Cost estimate: ~$1.50/month for 1M requests
 - API Gateway outputs in main.tf (endpoint, invoke URL, routes, summary)
-- Lambda Functions Terraform module with 3 serverless backend functions (Issue #5)
+- Lambda Functions Terraform module with 4 serverless backend functions (Issue #5)
   - Auth Lambda for user authentication with AWS Cognito
     - Operations: login, refresh, logout, verify
     - JWT token validation and management
@@ -83,12 +130,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
     - DataCite API integration for DOI lifecycle management
     - DynamoDB registry for DOI tracking
     - Runtime: Python 3.11, Timeout: 60s, Memory: 512 MB
+  - Bedrock Analysis Lambda for AI-powered research analysis
+    - 7 operations: analyze, extract metadata, classify, describe, embed, OCR, batch
+    - Claude 3 Sonnet and Titan model integration
+    - Archaeological artifact classification
+    - Runtime: Python 3.11, Timeout: 120s, Memory: 1024 MB
   - IAM roles with least-privilege policies for each function
   - CloudWatch log groups with 90-day retention
   - Terraform archive provider for Lambda packaging
   - API Gateway integration support (optional)
   - Comprehensive 160+ line module documentation
-  - Cost estimate: ~$21.50/month for 1M requests
+  - Cost estimate: ~$23.50/month for 1M requests (including AI operations)
 - Lambda function outputs in main.tf (ARNs and summary)
 - EventBridge Terraform module for event-driven workflows (Issue #4)
   - Custom event bus for Aperture platform events

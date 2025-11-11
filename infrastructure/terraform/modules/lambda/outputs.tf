@@ -73,6 +73,30 @@ output "doi_minting_lambda_qualified_arn" {
 }
 
 #############################################
+# Bedrock Analysis Lambda
+#############################################
+
+output "bedrock_analysis_lambda_arn" {
+  description = "ARN of the Bedrock analysis Lambda function"
+  value       = aws_lambda_function.bedrock_analysis.arn
+}
+
+output "bedrock_analysis_lambda_name" {
+  description = "Name of the Bedrock analysis Lambda function"
+  value       = aws_lambda_function.bedrock_analysis.function_name
+}
+
+output "bedrock_analysis_lambda_invoke_arn" {
+  description = "Invoke ARN of the Bedrock analysis Lambda function"
+  value       = aws_lambda_function.bedrock_analysis.invoke_arn
+}
+
+output "bedrock_analysis_lambda_qualified_arn" {
+  description = "Qualified ARN of the Bedrock analysis Lambda function"
+  value       = aws_lambda_function.bedrock_analysis.qualified_arn
+}
+
+#############################################
 # IAM Roles
 #############################################
 
@@ -89,6 +113,11 @@ output "presigned_urls_lambda_role_arn" {
 output "doi_minting_lambda_role_arn" {
   description = "ARN of the DOI minting Lambda IAM role"
   value       = aws_iam_role.doi_minting_lambda.arn
+}
+
+output "bedrock_analysis_lambda_role_arn" {
+  description = "ARN of the Bedrock analysis Lambda IAM role"
+  value       = aws_iam_role.bedrock_analysis_lambda.arn
 }
 
 #############################################
@@ -110,6 +139,11 @@ output "doi_minting_lambda_log_group_name" {
   value       = aws_cloudwatch_log_group.doi_minting_lambda.name
 }
 
+output "bedrock_analysis_lambda_log_group_name" {
+  description = "Name of the Bedrock analysis Lambda CloudWatch log group"
+  value       = aws_cloudwatch_log_group.bedrock_analysis_lambda.name
+}
+
 #############################################
 # Summary
 #############################################
@@ -117,11 +151,12 @@ output "doi_minting_lambda_log_group_name" {
 output "summary" {
   description = "Summary of Lambda resources created"
   value = {
-    auth_lambda_name           = aws_lambda_function.auth.function_name
-    presigned_urls_lambda_name = aws_lambda_function.presigned_urls.function_name
-    doi_minting_lambda_name    = aws_lambda_function.doi_minting.function_name
-    total_functions            = 3
-    runtime                    = aws_lambda_function.auth.runtime
-    environment                = var.environment
+    auth_lambda_name              = aws_lambda_function.auth.function_name
+    presigned_urls_lambda_name    = aws_lambda_function.presigned_urls.function_name
+    doi_minting_lambda_name       = aws_lambda_function.doi_minting.function_name
+    bedrock_analysis_lambda_name  = aws_lambda_function.bedrock_analysis.function_name
+    total_functions               = 4
+    runtime                       = aws_lambda_function.auth.runtime
+    environment                   = var.environment
   }
 }

@@ -240,6 +240,81 @@ resource "aws_iam_role_policy" "doi_minting_lambda" {
   })
 }
 
+# Bedrock Analysis Lambda Role
+resource "aws_iam_role" "bedrock_analysis_lambda" {
+  name = "${var.project_name}-${var.environment}-bedrock-analysis-lambda"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name     = "${var.project_name}-${var.environment}-bedrock-analysis-lambda-role"
+      Function = "bedrock-analysis"
+    }
+  )
+}
+
+# Bedrock Analysis Lambda Policy
+resource "aws_iam_role_policy" "bedrock_analysis_lambda" {
+  name = "${var.project_name}-${var.environment}-bedrock-analysis-lambda-policy"
+  role = aws_iam_role.bedrock_analysis_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:InvokeModel",
+          "bedrock:InvokeModelWithResponseStream"
+        ]
+        Resource = [
+          "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0",
+          "arn:aws:bedrock:*::foundation-model/amazon.titan-embed-image-v1",
+          "arn:aws:bedrock:*::foundation-model/amazon.titan-image-generator-v1"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "s3:GetObject"
+        ]
+        Resource = [
+          var.public_media_bucket_arn,
+          "${var.public_media_bucket_arn}/*",
+          var.private_media_bucket_arn,
+          "${var.private_media_bucket_arn}/*",
+          var.restricted_media_bucket_arn,
+          "${var.restricted_media_bucket_arn}/*",
+          var.embargoed_media_bucket_arn,
+          "${var.embargoed_media_bucket_arn}/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${var.project_name}-${var.environment}-bedrock-analysis:*"
+      }
+    ]
+  })
+}
+
 #############################################
 # Package Lambda Functions
 #############################################
@@ -263,6 +338,13 @@ data "archive_file" "doi_minting_lambda" {
   type        = "zip"
   source_dir  = "${path.root}/lambda/doi-minting"
   output_path = "${path.module}/packages/doi-minting.zip"
+}
+
+# Bedrock Analysis Lambda Package
+data "archive_file" "bedrock_analysis_lambda" {
+  type        = "zip"
+  source_dir  = "${path.root}/lambda/bedrock-analysis"
+  output_path = "${path.module}/packages/bedrock-analysis.zip"
 }
 
 #############################################
@@ -304,6 +386,19 @@ resource "aws_cloudwatch_log_group" "doi_minting_lambda" {
     {
       Name     = "${var.project_name}-${var.environment}-doi-minting-logs"
       Function = "doi-minting"
+    }
+  )
+}
+
+resource "aws_cloudwatch_log_group" "bedrock_analysis_lambda" {
+  name              = "/aws/lambda/${var.project_name}-${var.environment}-bedrock-analysis"
+  retention_in_days = var.log_retention_days
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name     = "${var.project_name}-${var.environment}-bedrock-analysis-logs"
+      Function = "bedrock-analysis"
     }
   )
 }
@@ -417,6 +512,41 @@ resource "aws_lambda_function" "doi_minting" {
   ]
 }
 
+# Bedrock Analysis Lambda
+resource "aws_lambda_function" "bedrock_analysis" {
+  filename         = data.archive_file.bedrock_analysis_lambda.output_path
+  function_name    = "${var.project_name}-${var.environment}-bedrock-analysis"
+  role             = aws_iam_role.bedrock_analysis_lambda.arn
+  handler          = "handler.lambda_handler"
+  source_code_hash = data.archive_file.bedrock_analysis_lambda.output_base64sha256
+  runtime          = local.lambda_runtime
+  timeout          = 120  # AI operations may take longer
+  memory_size      = 1024 # More memory for AI processing
+
+  environment {
+    variables = {
+      PUBLIC_MEDIA_BUCKET     = var.public_media_bucket_name
+      PRIVATE_MEDIA_BUCKET    = var.private_media_bucket_name
+      RESTRICTED_MEDIA_BUCKET = var.restricted_media_bucket_name
+      EMBARGOED_MEDIA_BUCKET  = var.embargoed_media_bucket_name
+      AWS_REGION              = data.aws_region.current.name
+      ENVIRONMENT             = var.environment
+    }
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name     = "${var.project_name}-${var.environment}-bedrock-analysis"
+      Function = "bedrock-analysis"
+    }
+  )
+
+  depends_on = [
+    aws_cloudwatch_log_group.bedrock_analysis_lambda
+  ]
+}
+
 #############################################
 # Lambda Permissions for API Gateway
 #############################################
@@ -447,6 +577,16 @@ resource "aws_lambda_permission" "doi_minting_api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.doi_minting.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${var.api_gateway_execution_arn}/*"
+}
+
+resource "aws_lambda_permission" "bedrock_analysis_api_gateway" {
+  count = var.api_gateway_execution_arn != "" ? 1 : 0
+
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.bedrock_analysis.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${var.api_gateway_execution_arn}/*"
 }
