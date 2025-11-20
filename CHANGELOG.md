@@ -8,6 +8,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- RAG Knowledge Base for semantic search and Q&A (Issue #11)
+  - RAG Lambda function for Retrieval-Augmented Generation
+    - `index_dataset`: Generate and store embeddings for dataset metadata
+    - `query`: Semantic search with Claude-generated answers
+    - `semantic_search`: Vector similarity search without answer generation
+    - `delete_dataset`: Remove all embeddings for a dataset
+  - Integration with Claude 3 Sonnet for answer generation
+  - Integration with Titan Embed Text for text embeddings
+  - Cosine similarity search for semantic matching
+  - DynamoDB table for vector embeddings storage
+    - Primary key: embedding_id + created_at
+    - GSI for dataset lookup (DatasetIdIndex)
+    - GSI for content type filtering (ContentTypeIndex)
+    - Support for metadata, abstract, keywords content types
+  - Lambda Terraform module integration
+    - RAG Lambda function (180s timeout, 1024 MB memory)
+    - IAM role with Bedrock and DynamoDB permissions
+    - CloudWatch log group
+    - API Gateway integration support
+  - Runtime: Python 3.11, Timeout: 180s, Memory: 1024 MB
 - Media Viewers for video, audio, and image preview (Issue #9)
   - Video Player component with HLS streaming support
     - HTTP Live Streaming (.m3u8) support via hls.js
@@ -76,7 +96,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - 7 new protected endpoints under `/ai/*`
   - JWT authentication via Cognito for all AI routes
   - Request/response logging for analysis operations
-  - Total routes increased from 9 to 16 (2 public, 14 protected)
+- API Gateway routes for RAG Knowledge Base operations
+  - 4 new protected endpoints under `/rag/*`
+  - `POST /rag/index`: Index dataset embeddings for semantic search
+  - `POST /rag/query`: Query knowledge base with RAG-generated answers
+  - `POST /rag/search`: Semantic search without answer generation
+  - `DELETE /rag/{dataset_id}`: Delete all embeddings for a dataset
+  - Total routes increased from 16 to 20 (2 public, 18 protected)
+- Frontend Knowledge Base query interface (Issue #11)
+  - Knowledge Base page at `/knowledge-base` with three tabs
+  - Ask Questions tab: Natural language Q&A with Claude-generated answers
+  - Semantic Search tab: Vector similarity search without answer generation
+  - Manage & About tab: Dataset indexing and information
+  - Query interface with dataset filtering and result count controls
+  - Results display with similarity scores and expandable source content
+  - API service methods for all 4 RAG operations
+  - Navigation sidebar entry under "AI & Search"
 - Frontend AI Analysis page and features
   - AI Analysis page at `/ai-analysis` with operation selection
   - Bucket and object key selection interface

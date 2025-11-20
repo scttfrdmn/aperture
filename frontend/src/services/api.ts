@@ -152,6 +152,50 @@ class ApiService {
     return response.data;
   }
 
+  // RAG Knowledge Base
+  async indexDataset(datasetId: string, metadata?: any) {
+    const response = await this.client.post('/rag/index', {
+      dataset_id: datasetId,
+      metadata
+    });
+    return response.data;
+  }
+
+  async queryKnowledgeBase(
+    query: string,
+    datasetId?: string,
+    topK?: number,
+    filters?: any
+  ) {
+    const response = await this.client.post('/rag/query', {
+      query,
+      dataset_id: datasetId,
+      top_k: topK || 5,
+      filters
+    });
+    return response.data;
+  }
+
+  async semanticSearch(
+    query: string,
+    datasetId?: string,
+    topK?: number,
+    filters?: any
+  ) {
+    const response = await this.client.post('/rag/search', {
+      query,
+      dataset_id: datasetId,
+      top_k: topK || 10,
+      filters
+    });
+    return response.data;
+  }
+
+  async deleteDatasetEmbeddings(datasetId: string) {
+    const response = await this.client.delete(`/rag/${datasetId}`);
+    return response.data;
+  }
+
   // Generic request method
   async request<T>(config: AxiosRequestConfig): Promise<T> {
     const response = await this.client.request<T>(config);

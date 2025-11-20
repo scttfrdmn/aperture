@@ -223,14 +223,16 @@ module "lambda_functions" {
   embargoed_media_bucket_arn   = module.s3_buckets.embargoed_media_bucket_arn
 
   # DynamoDB Tables
-  doi_registry_table_name    = module.dynamodb.doi_registry_table_name
-  doi_registry_table_arn     = module.dynamodb.doi_registry_table_arn
-  users_table_name           = module.dynamodb.users_table_name
-  users_table_arn            = module.dynamodb.users_table_arn
-  access_logs_table_name     = module.dynamodb.access_logs_table_name
-  access_logs_table_arn      = module.dynamodb.access_logs_table_arn
-  budget_tracking_table_name = module.dynamodb.budget_tracking_table_name
-  budget_tracking_table_arn  = module.dynamodb.budget_tracking_table_arn
+  doi_registry_table_name              = module.dynamodb.doi_registry_table_name
+  doi_registry_table_arn               = module.dynamodb.doi_registry_table_arn
+  users_table_name                     = module.dynamodb.users_table_name
+  users_table_arn                      = module.dynamodb.users_table_arn
+  access_logs_table_name               = module.dynamodb.access_logs_table_name
+  access_logs_table_arn                = module.dynamodb.access_logs_table_arn
+  budget_tracking_table_name           = module.dynamodb.budget_tracking_table_name
+  budget_tracking_table_arn            = module.dynamodb.budget_tracking_table_arn
+  knowledge_base_embeddings_table_name = module.dynamodb.knowledge_base_embeddings_table_name
+  knowledge_base_embeddings_table_arn  = module.dynamodb.knowledge_base_embeddings_table_arn
 
   # DataCite Configuration
   datacite_username = var.datacite_username
@@ -272,6 +274,16 @@ module "api_gateway" {
   doi_minting_lambda_name       = module.lambda_functions.doi_minting_lambda_name
   doi_minting_lambda_arn        = module.lambda_functions.doi_minting_lambda_arn
   doi_minting_lambda_invoke_arn = module.lambda_functions.doi_minting_lambda_invoke_arn
+
+  # Bedrock Analysis Lambda
+  bedrock_analysis_lambda_name       = module.lambda_functions.bedrock_analysis_lambda_name
+  bedrock_analysis_lambda_arn        = module.lambda_functions.bedrock_analysis_lambda_arn
+  bedrock_analysis_lambda_invoke_arn = module.lambda_functions.bedrock_analysis_lambda_invoke_arn
+
+  # RAG Knowledge Base Lambda
+  rag_knowledge_base_lambda_name       = module.lambda_functions.rag_knowledge_base_lambda_name
+  rag_knowledge_base_lambda_arn        = module.lambda_functions.rag_knowledge_base_lambda_arn
+  rag_knowledge_base_lambda_invoke_arn = module.lambda_functions.rag_knowledge_base_lambda_invoke_arn
 
   # CORS Configuration
   cors_allowed_origins = var.cors_allowed_origins

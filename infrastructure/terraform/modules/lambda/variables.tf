@@ -121,6 +121,16 @@ variable "budget_tracking_table_arn" {
   type        = string
 }
 
+variable "knowledge_base_embeddings_table_name" {
+  description = "Name of the knowledge base embeddings DynamoDB table"
+  type        = string
+}
+
+variable "knowledge_base_embeddings_table_arn" {
+  description = "ARN of the knowledge base embeddings DynamoDB table"
+  type        = string
+}
+
 #############################################
 # DataCite Configuration
 #############################################

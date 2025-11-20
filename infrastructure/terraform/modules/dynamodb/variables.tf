@@ -116,6 +116,19 @@ variable "budget_write_capacity" {
   default     = 2
 }
 
+# Knowledge base embeddings table capacity settings
+variable "embeddings_read_capacity" {
+  description = "Read capacity units for embeddings table (PROVISIONED mode only)"
+  type        = number
+  default     = 5
+}
+
+variable "embeddings_write_capacity" {
+  description = "Write capacity units for embeddings table (PROVISIONED mode only)"
+  type        = number
+  default     = 5
+}
+
 variable "tags" {
   description = "Additional tags to apply to all resources"
   type        = map(string)
