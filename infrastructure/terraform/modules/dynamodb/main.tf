@@ -312,6 +312,80 @@ resource "aws_dynamodb_table" "budget_tracking" {
   )
 }
 
+# Table 5: Knowledge Base Embeddings
+# Stores vector embeddings for RAG (Retrieval-Augmented Generation)
+resource "aws_dynamodb_table" "knowledge_base_embeddings" {
+  name           = "${var.project_name}-knowledge-base-embeddings-${var.environment}"
+  billing_mode   = var.billing_mode
+  read_capacity  = var.billing_mode == "PROVISIONED" ? var.embeddings_read_capacity : null
+  write_capacity = var.billing_mode == "PROVISIONED" ? var.embeddings_write_capacity : null
+  hash_key       = "embedding_id"
+  range_key      = "created_at"
+
+  attribute {
+    name = "embedding_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "created_at"
+    type = "S"
+  }
+
+  attribute {
+    name = "dataset_id"
+    type = "S"
+  }
+
+  attribute {
+    name = "content_type"
+    type = "S"
+  }
+
+  # Global Secondary Index for dataset lookup
+  global_secondary_index {
+    name            = "DatasetIdIndex"
+    hash_key        = "dataset_id"
+    range_key       = "created_at"
+    projection_type = "ALL"
+    read_capacity   = var.billing_mode == "PROVISIONED" ? var.embeddings_read_capacity : null
+    write_capacity  = var.billing_mode == "PROVISIONED" ? var.embeddings_write_capacity : null
+  }
+
+  # Global Secondary Index for content type filtering
+  global_secondary_index {
+    name            = "ContentTypeIndex"
+    hash_key        = "content_type"
+    range_key       = "created_at"
+    projection_type = "ALL"
+    read_capacity   = var.billing_mode == "PROVISIONED" ? var.embeddings_read_capacity : null
+    write_capacity  = var.billing_mode == "PROVISIONED" ? var.embeddings_write_capacity : null
+  }
+
+  point_in_time_recovery {
+    enabled = var.enable_point_in_time_recovery
+  }
+
+  server_side_encryption {
+    enabled     = true
+    kms_key_arn = var.kms_key_arn
+  }
+
+  ttl {
+    enabled        = false
+    attribute_name = ""
+  }
+
+  tags = merge(
+    var.tags,
+    {
+      Name        = "${var.project_name}-knowledge-base-embeddings-${var.environment}"
+      Purpose     = "Vector embeddings for RAG knowledge base"
+      Environment = var.environment
+    }
+  )
+}
+
 # Auto-scaling for Users table (if using PROVISIONED billing)
 resource "aws_appautoscaling_target" "users_read" {
   count              = var.billing_mode == "PROVISIONED" && var.enable_autoscaling ? 1 : 0

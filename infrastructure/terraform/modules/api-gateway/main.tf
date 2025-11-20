@@ -95,6 +95,15 @@ resource "aws_apigatewayv2_integration" "bedrock_analysis" {
   payload_format_version = "2.0"
 }
 
+# RAG Knowledge Base Lambda Integration
+resource "aws_apigatewayv2_integration" "rag_knowledge_base" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = var.rag_knowledge_base_lambda_invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
 #############################################
 # Routes - Authentication (Public)
 #############################################
@@ -240,6 +249,42 @@ resource "aws_apigatewayv2_route" "ai_analyze_batch" {
 }
 
 #############################################
+# Routes - RAG Knowledge Base (Protected)
+#############################################
+
+resource "aws_apigatewayv2_route" "rag_index_dataset" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /rag/index"
+  target             = "integrations/${aws_apigatewayv2_integration.rag_knowledge_base.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "rag_query" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /rag/query"
+  target             = "integrations/${aws_apigatewayv2_integration.rag_knowledge_base.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "rag_search" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /rag/search"
+  target             = "integrations/${aws_apigatewayv2_integration.rag_knowledge_base.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "rag_delete" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "DELETE /rag/{dataset_id}"
+  target             = "integrations/${aws_apigatewayv2_integration.rag_knowledge_base.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+#############################################
 # Stage
 #############################################
 
@@ -333,6 +378,15 @@ resource "aws_lambda_permission" "api_gateway_bedrock_analysis" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = var.bedrock_analysis_lambda_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
+}
+
+# RAG Knowledge Base Lambda Permission
+resource "aws_lambda_permission" "api_gateway_rag_knowledge_base" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = var.rag_knowledge_base_lambda_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
 }

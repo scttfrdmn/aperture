@@ -85,6 +85,27 @@ output "budget_tracking_table_stream_arn" {
   value       = try(aws_dynamodb_table.budget_tracking.stream_arn, "")
 }
 
+# Knowledge base embeddings table outputs
+output "knowledge_base_embeddings_table_name" {
+  description = "Name of the knowledge base embeddings DynamoDB table"
+  value       = aws_dynamodb_table.knowledge_base_embeddings.name
+}
+
+output "knowledge_base_embeddings_table_arn" {
+  description = "ARN of the knowledge base embeddings DynamoDB table"
+  value       = aws_dynamodb_table.knowledge_base_embeddings.arn
+}
+
+output "knowledge_base_embeddings_table_id" {
+  description = "ID of the knowledge base embeddings DynamoDB table"
+  value       = aws_dynamodb_table.knowledge_base_embeddings.id
+}
+
+output "knowledge_base_embeddings_table_stream_arn" {
+  description = "Stream ARN of the knowledge base embeddings DynamoDB table"
+  value       = try(aws_dynamodb_table.knowledge_base_embeddings.stream_arn, "")
+}
+
 # Consolidated outputs
 output "all_table_names" {
   description = "List of all DynamoDB table names"
@@ -93,6 +114,7 @@ output "all_table_names" {
     aws_dynamodb_table.doi_registry.name,
     aws_dynamodb_table.access_logs.name,
     aws_dynamodb_table.budget_tracking.name,
+    aws_dynamodb_table.knowledge_base_embeddings.name,
   ]
 }
 
@@ -103,5 +125,6 @@ output "all_table_arns" {
     aws_dynamodb_table.doi_registry.arn,
     aws_dynamodb_table.access_logs.arn,
     aws_dynamodb_table.budget_tracking.arn,
+    aws_dynamodb_table.knowledge_base_embeddings.arn,
   ]
 }

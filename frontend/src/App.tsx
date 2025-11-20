@@ -12,6 +12,7 @@ import DatasetDetail from './pages/DatasetDetail';
 import DOIManagement from './pages/DOIManagement';
 import Profile from './pages/Profile';
 import AIAnalysis from './pages/AIAnalysis';
+import KnowledgeBase from './pages/KnowledgeBase';
 
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
@@ -44,6 +45,7 @@ const App: React.FC = () => {
                     <Route path="/dataset/:id" element={<DatasetDetail />} />
                     <Route path="/doi" element={<DOIManagement />} />
                     <Route path="/ai-analysis" element={<AIAnalysis />} />
+                    <Route path="/knowledge-base" element={<KnowledgeBase />} />
                     <Route path="/profile" element={<Profile />} />
                   </Routes>
                 </ContentLayout>

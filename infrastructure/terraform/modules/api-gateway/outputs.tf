@@ -117,6 +117,12 @@ output "routes" {
     ai_generate_embeddings = "POST /ai/generate-embeddings"
     ai_extract_text        = "POST /ai/extract-text"
     ai_analyze_batch       = "POST /ai/analyze-batch"
+
+    # RAG knowledge base routes (protected)
+    rag_index_dataset = "POST /rag/index"
+    rag_query         = "POST /rag/query"
+    rag_search        = "POST /rag/search"
+    rag_delete        = "DELETE /rag/{dataset_id}"
   }
 }
 
@@ -131,9 +137,9 @@ output "summary" {
     api_endpoint     = aws_apigatewayv2_api.main.api_endpoint
     stage_invoke_url = aws_apigatewayv2_stage.main.invoke_url
     stage_name       = aws_apigatewayv2_stage.main.name
-    total_routes     = 16
+    total_routes     = 20
     public_routes    = 2
-    protected_routes = 14
+    protected_routes = 18
     environment      = var.environment
     cors_enabled     = length(var.cors_allowed_origins) > 0
     custom_domain    = var.custom_domain_name != "" ? var.custom_domain_name : "none"

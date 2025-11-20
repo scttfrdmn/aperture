@@ -315,6 +315,80 @@ resource "aws_iam_role_policy" "bedrock_analysis_lambda" {
   })
 }
 
+# RAG Knowledge Base Lambda Role
+resource "aws_iam_role" "rag_knowledge_base_lambda" {
+  name = "${var.project_name}-${var.environment}-rag-knowledge-base-lambda"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "lambda.amazonaws.com"
+        }
+        Action = "sts:AssumeRole"
+      }
+    ]
+  })
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name     = "${var.project_name}-${var.environment}-rag-knowledge-base-lambda-role"
+      Function = "rag-knowledge-base"
+    }
+  )
+}
+
+# RAG Knowledge Base Lambda Policy
+resource "aws_iam_role_policy" "rag_knowledge_base_lambda" {
+  name = "${var.project_name}-${var.environment}-rag-knowledge-base-lambda-policy"
+  role = aws_iam_role.rag_knowledge_base_lambda.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "bedrock:InvokeModel",
+          "bedrock:InvokeModelWithResponseStream"
+        ]
+        Resource = [
+          "arn:aws:bedrock:*::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0",
+          "arn:aws:bedrock:*::foundation-model/amazon.titan-embed-text-v1",
+          "arn:aws:bedrock:*::foundation-model/amazon.titan-embed-image-v1"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "dynamodb:PutItem",
+          "dynamodb:GetItem",
+          "dynamodb:Query",
+          "dynamodb:Scan",
+          "dynamodb:DeleteItem",
+          "dynamodb:UpdateItem"
+        ]
+        Resource = [
+          var.knowledge_base_embeddings_table_arn,
+          "${var.knowledge_base_embeddings_table_arn}/index/*"
+        ]
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "logs:CreateLogGroup",
+          "logs:CreateLogStream",
+          "logs:PutLogEvents"
+        ]
+        Resource = "arn:aws:logs:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:log-group:/aws/lambda/${var.project_name}-${var.environment}-rag-knowledge-base:*"
+      }
+    ]
+  })
+}
+
 #############################################
 # Package Lambda Functions
 #############################################
@@ -345,6 +419,13 @@ data "archive_file" "bedrock_analysis_lambda" {
   type        = "zip"
   source_dir  = "${path.root}/lambda/bedrock-analysis"
   output_path = "${path.module}/packages/bedrock-analysis.zip"
+}
+
+# RAG Knowledge Base Lambda Package
+data "archive_file" "rag_knowledge_base_lambda" {
+  type        = "zip"
+  source_dir  = "${path.root}/lambda/rag-knowledge-base"
+  output_path = "${path.module}/packages/rag-knowledge-base.zip"
 }
 
 #############################################
@@ -399,6 +480,19 @@ resource "aws_cloudwatch_log_group" "bedrock_analysis_lambda" {
     {
       Name     = "${var.project_name}-${var.environment}-bedrock-analysis-logs"
       Function = "bedrock-analysis"
+    }
+  )
+}
+
+resource "aws_cloudwatch_log_group" "rag_knowledge_base_lambda" {
+  name              = "/aws/lambda/${var.project_name}-${var.environment}-rag-knowledge-base"
+  retention_in_days = var.log_retention_days
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name     = "${var.project_name}-${var.environment}-rag-knowledge-base-logs"
+      Function = "rag-knowledge-base"
     }
   )
 }
@@ -547,6 +641,38 @@ resource "aws_lambda_function" "bedrock_analysis" {
   ]
 }
 
+# RAG Knowledge Base Lambda
+resource "aws_lambda_function" "rag_knowledge_base" {
+  filename         = data.archive_file.rag_knowledge_base_lambda.output_path
+  function_name    = "${var.project_name}-${var.environment}-rag-knowledge-base"
+  role             = aws_iam_role.rag_knowledge_base_lambda.arn
+  handler          = "handler.lambda_handler"
+  source_code_hash = data.archive_file.rag_knowledge_base_lambda.output_base64sha256
+  runtime          = local.lambda_runtime
+  timeout          = 180  # RAG operations with embeddings may take longer
+  memory_size      = 1024 # More memory for embedding operations
+
+  environment {
+    variables = {
+      EMBEDDINGS_TABLE = var.knowledge_base_embeddings_table_name
+      AWS_REGION       = data.aws_region.current.name
+      ENVIRONMENT      = var.environment
+    }
+  }
+
+  tags = merge(
+    local.common_tags,
+    {
+      Name     = "${var.project_name}-${var.environment}-rag-knowledge-base"
+      Function = "rag-knowledge-base"
+    }
+  )
+
+  depends_on = [
+    aws_cloudwatch_log_group.rag_knowledge_base_lambda
+  ]
+}
+
 #############################################
 # Lambda Permissions for API Gateway
 #############################################
@@ -587,6 +713,16 @@ resource "aws_lambda_permission" "bedrock_analysis_api_gateway" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.bedrock_analysis.function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${var.api_gateway_execution_arn}/*"
+}
+
+resource "aws_lambda_permission" "rag_knowledge_base_api_gateway" {
+  count = var.api_gateway_execution_arn != "" ? 1 : 0
+
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.rag_knowledge_base.function_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${var.api_gateway_execution_arn}/*"
 }

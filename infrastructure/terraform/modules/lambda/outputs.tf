@@ -97,6 +97,30 @@ output "bedrock_analysis_lambda_qualified_arn" {
 }
 
 #############################################
+# RAG Knowledge Base Lambda
+#############################################
+
+output "rag_knowledge_base_lambda_arn" {
+  description = "ARN of the RAG knowledge base Lambda function"
+  value       = aws_lambda_function.rag_knowledge_base.arn
+}
+
+output "rag_knowledge_base_lambda_name" {
+  description = "Name of the RAG knowledge base Lambda function"
+  value       = aws_lambda_function.rag_knowledge_base.function_name
+}
+
+output "rag_knowledge_base_lambda_invoke_arn" {
+  description = "Invoke ARN of the RAG knowledge base Lambda function"
+  value       = aws_lambda_function.rag_knowledge_base.invoke_arn
+}
+
+output "rag_knowledge_base_lambda_qualified_arn" {
+  description = "Qualified ARN of the RAG knowledge base Lambda function"
+  value       = aws_lambda_function.rag_knowledge_base.qualified_arn
+}
+
+#############################################
 # IAM Roles
 #############################################
 
@@ -118,6 +142,11 @@ output "doi_minting_lambda_role_arn" {
 output "bedrock_analysis_lambda_role_arn" {
   description = "ARN of the Bedrock analysis Lambda IAM role"
   value       = aws_iam_role.bedrock_analysis_lambda.arn
+}
+
+output "rag_knowledge_base_lambda_role_arn" {
+  description = "ARN of the RAG knowledge base Lambda IAM role"
+  value       = aws_iam_role.rag_knowledge_base_lambda.arn
 }
 
 #############################################
@@ -144,6 +173,11 @@ output "bedrock_analysis_lambda_log_group_name" {
   value       = aws_cloudwatch_log_group.bedrock_analysis_lambda.name
 }
 
+output "rag_knowledge_base_lambda_log_group_name" {
+  description = "Name of the RAG knowledge base Lambda CloudWatch log group"
+  value       = aws_cloudwatch_log_group.rag_knowledge_base_lambda.name
+}
+
 #############################################
 # Summary
 #############################################
@@ -155,7 +189,8 @@ output "summary" {
     presigned_urls_lambda_name    = aws_lambda_function.presigned_urls.function_name
     doi_minting_lambda_name       = aws_lambda_function.doi_minting.function_name
     bedrock_analysis_lambda_name  = aws_lambda_function.bedrock_analysis.function_name
-    total_functions               = 4
+    rag_knowledge_base_lambda_name = aws_lambda_function.rag_knowledge_base.function_name
+    total_functions               = 5
     runtime                       = aws_lambda_function.auth.runtime
     environment                   = var.environment
   }

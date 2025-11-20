@@ -97,6 +97,21 @@ variable "bedrock_analysis_lambda_invoke_arn" {
   type        = string
 }
 
+variable "rag_knowledge_base_lambda_name" {
+  description = "Name of the RAG knowledge base Lambda function"
+  type        = string
+}
+
+variable "rag_knowledge_base_lambda_arn" {
+  description = "ARN of the RAG knowledge base Lambda function"
+  type        = string
+}
+
+variable "rag_knowledge_base_lambda_invoke_arn" {
+  description = "Invoke ARN of the RAG knowledge base Lambda function"
+  type        = string
+}
+
 #############################################
 # CORS Configuration
 #############################################
