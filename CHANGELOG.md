@@ -8,6 +8,52 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+- Media Viewers for video, audio, and image preview (Issue #9)
+  - Video Player component with HLS streaming support
+    - HTTP Live Streaming (.m3u8) support via hls.js
+    - Adaptive bitrate streaming for optimal quality
+    - Standard video format support (MP4, WebM, OGG)
+    - Automatic error recovery for network and media errors
+    - Native HTML5 video controls
+    - Browser compatibility across Chrome, Firefox, Safari, Edge
+  - Audio Player component with waveform visualization
+    - Real-time waveform display via wavesurfer.js
+    - Interactive waveform seeking
+    - Play, pause, stop controls
+    - Volume slider (0-100%)
+    - Current time and duration display
+    - Support for MP3, WAV, OGG, AAC, M4A, FLAC formats
+  - Image Viewer component with zoom and pan
+    - Zoom controls (0.5x to 8x) via react-zoom-pan-pinch
+    - Mouse wheel zoom
+    - Click and drag panning
+    - Reset and center view buttons
+    - Double-click to reset
+    - Image dimension display
+    - Support for JPEG, PNG, GIF, WebP, SVG, TIFF formats
+  - MediaViewer unified component
+    - Automatic viewer selection based on MIME type or file extension
+    - Support for video, audio, and image formats
+    - Unsupported file type handling
+  - Dataset Detail page integration
+    - New Preview tab for media playback
+    - Preview button on media files in Files tab
+    - Automatic tab switching on preview
+    - Mock media URLs for demonstration
+  - Frontend dependencies added
+    - hls.js ^1.4.0 for HLS video streaming
+    - wavesurfer.js ^7.4.0 for audio waveform visualization
+    - react-zoom-pan-pinch ^3.3.0 for image zoom/pan
+  - Comprehensive media viewers documentation (docs/MEDIA-VIEWERS.md)
+    - 600+ line guide covering all viewer features
+    - Supported formats table with MIME types
+    - Component API documentation with examples
+    - Configuration options for each viewer
+    - Best practices for video encoding, audio quality, image optimization
+    - CORS configuration guide for S3
+    - Troubleshooting guide for common issues
+    - Browser compatibility matrix
+    - Future enhancements roadmap (3D models, PDF viewer, 360° images)
 - AWS Bedrock AI Integration for archaeological research analysis (Issue #10)
   - Bedrock Analysis Lambda function with 7 AI operations
     - `analyze_image`: Detailed visual analysis using Claude 3 Sonnet vision

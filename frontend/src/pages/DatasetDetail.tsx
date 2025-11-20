@@ -12,11 +12,18 @@ import {
   Tabs,
   Table
 } from '@cloudscape-design/components';
+import MediaViewer from '../components/MediaViewer';
 
 const DatasetDetail: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('metadata');
+  const [selectedFile, setSelectedFile] = useState<{
+    name: string;
+    size: string;
+    type: string;
+    url: string;
+  } | null>(null);
 
   // Mock data - replace with actual API call
   const dataset = {
@@ -42,15 +49,60 @@ const DatasetDetail: React.FC = () => {
   };
 
   const files = [
-    { name: 'field_notes.pdf', size: '15 MB', type: 'application/pdf' },
-    { name: 'photos.zip', size: '1.2 GB', type: 'application/zip' },
-    { name: 'gis_data.geojson', size: '8.4 MB', type: 'application/geo+json' },
-    { name: 'report.docx', size: '2.1 MB', type: 'application/vnd.openxmlformats' }
+    {
+      name: 'artifact_001.jpg',
+      size: '3.2 MB',
+      type: 'image/jpeg',
+      url: 'https://images.unsplash.com/photo-1518998053901-5348d3961a04?w=1200'
+    },
+    {
+      name: 'excavation_site.mp4',
+      size: '125 MB',
+      type: 'video/mp4',
+      url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4'
+    },
+    {
+      name: 'field_recording.mp3',
+      size: '8.5 MB',
+      type: 'audio/mpeg',
+      url: 'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3'
+    },
+    {
+      name: 'pottery_fragment.png',
+      size: '5.1 MB',
+      type: 'image/png',
+      url: 'https://images.unsplash.com/photo-1582721478779-0ae163c05a60?w=1200'
+    },
+    { name: 'field_notes.pdf', size: '15 MB', type: 'application/pdf', url: '' },
+    { name: 'photos.zip', size: '1.2 GB', type: 'application/zip', url: '' },
+    { name: 'gis_data.geojson', size: '8.4 MB', type: 'application/geo+json', url: '' },
+    { name: 'report.docx', size: '2.1 MB', type: 'application/vnd.openxmlformats', url: '' }
   ];
 
   const handleDownload = (filename: string) => {
     console.log('Downloading:', filename);
     // TODO: Generate presigned URL and download
+  };
+
+  const handlePreview = (file: {
+    name: string;
+    size: string;
+    type: string;
+    url: string;
+  }) => {
+    if (file.url) {
+      setSelectedFile(file);
+      setActiveTab('preview');
+    }
+  };
+
+  const canPreview = (file: { type: string; url: string }): boolean => {
+    return (
+      file.url !== '' &&
+      (file.type.startsWith('image/') ||
+        file.type.startsWith('video/') ||
+        file.type.startsWith('audio/'))
+    );
   };
 
   return (
@@ -115,6 +167,36 @@ const DatasetDetail: React.FC = () => {
         activeTabId={activeTab}
         onChange={({ detail }) => setActiveTab(detail.activeTabId)}
         tabs={[
+          {
+            id: 'preview',
+            label: 'Preview',
+            content: selectedFile ? (
+              <Container>
+                <SpaceBetween size="m">
+                  <Box>
+                    <Box variant="h2">{selectedFile.name}</Box>
+                    <Box variant="small" color="text-body-secondary">
+                      {selectedFile.type} • {selectedFile.size}
+                    </Box>
+                  </Box>
+                  <MediaViewer
+                    src={selectedFile.url}
+                    filename={selectedFile.name}
+                    mimeType={selectedFile.type}
+                  />
+                </SpaceBetween>
+              </Container>
+            ) : (
+              <Container>
+                <Box textAlign="center" padding="xxl">
+                  <Box variant="p" color="text-body-secondary">
+                    No file selected for preview. Go to the Files tab and click Preview on a media
+                    file.
+                  </Box>
+                </Box>
+              </Container>
+            )
+          },
           {
             id: 'metadata',
             label: 'Metadata',
@@ -183,7 +265,14 @@ const DatasetDetail: React.FC = () => {
                     id: 'actions',
                     header: 'Actions',
                     cell: (item) => (
-                      <Button onClick={() => handleDownload(item.name)}>Download</Button>
+                      <SpaceBetween direction="horizontal" size="xs">
+                        {canPreview(item) && (
+                          <Button onClick={() => handlePreview(item)} iconName="view">
+                            Preview
+                          </Button>
+                        )}
+                        <Button onClick={() => handleDownload(item.name)}>Download</Button>
+                      </SpaceBetween>
                     )
                   }
                 ]}
