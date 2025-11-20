@@ -110,13 +110,13 @@ output "routes" {
     doi_delete = "DELETE /doi/{id}"
 
     # AI analysis routes (protected)
-    ai_analyze_image       = "POST /ai/analyze-image"
-    ai_extract_metadata    = "POST /ai/extract-metadata"
-    ai_classify_artifact   = "POST /ai/classify-artifact"
+    ai_analyze_image        = "POST /ai/analyze-image"
+    ai_extract_metadata     = "POST /ai/extract-metadata"
+    ai_classify_artifact    = "POST /ai/classify-artifact"
     ai_generate_description = "POST /ai/generate-description"
-    ai_generate_embeddings = "POST /ai/generate-embeddings"
-    ai_extract_text        = "POST /ai/extract-text"
-    ai_analyze_batch       = "POST /ai/analyze-batch"
+    ai_generate_embeddings  = "POST /ai/generate-embeddings"
+    ai_extract_text         = "POST /ai/extract-text"
+    ai_analyze_batch        = "POST /ai/analyze-batch"
 
     # RAG knowledge base routes (protected)
     rag_index_dataset = "POST /rag/index"

@@ -185,13 +185,13 @@ output "rag_knowledge_base_lambda_log_group_name" {
 output "summary" {
   description = "Summary of Lambda resources created"
   value = {
-    auth_lambda_name              = aws_lambda_function.auth.function_name
-    presigned_urls_lambda_name    = aws_lambda_function.presigned_urls.function_name
-    doi_minting_lambda_name       = aws_lambda_function.doi_minting.function_name
-    bedrock_analysis_lambda_name  = aws_lambda_function.bedrock_analysis.function_name
+    auth_lambda_name               = aws_lambda_function.auth.function_name
+    presigned_urls_lambda_name     = aws_lambda_function.presigned_urls.function_name
+    doi_minting_lambda_name        = aws_lambda_function.doi_minting.function_name
+    bedrock_analysis_lambda_name   = aws_lambda_function.bedrock_analysis.function_name
     rag_knowledge_base_lambda_name = aws_lambda_function.rag_knowledge_base.function_name
-    total_functions               = 5
-    runtime                       = aws_lambda_function.auth.runtime
-    environment                   = var.environment
+    total_functions                = 5
+    runtime                        = aws_lambda_function.auth.runtime
+    environment                    = var.environment
   }
 }
