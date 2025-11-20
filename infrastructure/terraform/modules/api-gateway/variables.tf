@@ -82,6 +82,21 @@ variable "doi_minting_lambda_invoke_arn" {
   type        = string
 }
 
+variable "bedrock_analysis_lambda_name" {
+  description = "Name of the Bedrock analysis Lambda function"
+  type        = string
+}
+
+variable "bedrock_analysis_lambda_arn" {
+  description = "ARN of the Bedrock analysis Lambda function"
+  type        = string
+}
+
+variable "bedrock_analysis_lambda_invoke_arn" {
+  description = "Invoke ARN of the Bedrock analysis Lambda function"
+  type        = string
+}
+
 #############################################
 # CORS Configuration
 #############################################

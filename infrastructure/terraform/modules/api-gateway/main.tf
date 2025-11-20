@@ -86,6 +86,15 @@ resource "aws_apigatewayv2_integration" "doi_minting" {
   payload_format_version = "2.0"
 }
 
+# Bedrock Analysis Lambda Integration
+resource "aws_apigatewayv2_integration" "bedrock_analysis" {
+  api_id                 = aws_apigatewayv2_api.main.id
+  integration_type       = "AWS_PROXY"
+  integration_uri        = var.bedrock_analysis_lambda_invoke_arn
+  integration_method     = "POST"
+  payload_format_version = "2.0"
+}
+
 #############################################
 # Routes - Authentication (Public)
 #############################################
@@ -166,6 +175,66 @@ resource "aws_apigatewayv2_route" "doi_delete" {
   api_id             = aws_apigatewayv2_api.main.id
   route_key          = "DELETE /doi/{id}"
   target             = "integrations/${aws_apigatewayv2_integration.doi_minting.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+#############################################
+# Routes - AI Analysis (Protected)
+#############################################
+
+resource "aws_apigatewayv2_route" "ai_analyze_image" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /ai/analyze-image"
+  target             = "integrations/${aws_apigatewayv2_integration.bedrock_analysis.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "ai_extract_metadata" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /ai/extract-metadata"
+  target             = "integrations/${aws_apigatewayv2_integration.bedrock_analysis.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "ai_classify_artifact" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /ai/classify-artifact"
+  target             = "integrations/${aws_apigatewayv2_integration.bedrock_analysis.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "ai_generate_description" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /ai/generate-description"
+  target             = "integrations/${aws_apigatewayv2_integration.bedrock_analysis.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "ai_generate_embeddings" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /ai/generate-embeddings"
+  target             = "integrations/${aws_apigatewayv2_integration.bedrock_analysis.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "ai_extract_text" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /ai/extract-text"
+  target             = "integrations/${aws_apigatewayv2_integration.bedrock_analysis.id}"
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
+}
+
+resource "aws_apigatewayv2_route" "ai_analyze_batch" {
+  api_id             = aws_apigatewayv2_api.main.id
+  route_key          = "POST /ai/analyze-batch"
+  target             = "integrations/${aws_apigatewayv2_integration.bedrock_analysis.id}"
   authorization_type = "JWT"
   authorizer_id      = aws_apigatewayv2_authorizer.cognito.id
 }
@@ -255,6 +324,15 @@ resource "aws_lambda_permission" "api_gateway_doi_minting" {
   statement_id  = "AllowAPIGatewayInvoke"
   action        = "lambda:InvokeFunction"
   function_name = var.doi_minting_lambda_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
+}
+
+# Bedrock Analysis Lambda Permission
+resource "aws_lambda_permission" "api_gateway_bedrock_analysis" {
+  statement_id  = "AllowAPIGatewayInvoke"
+  action        = "lambda:InvokeFunction"
+  function_name = var.bedrock_analysis_lambda_name
   principal     = "apigateway.amazonaws.com"
   source_arn    = "${aws_apigatewayv2_api.main.execution_arn}/*/*"
 }

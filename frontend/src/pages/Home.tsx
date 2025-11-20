@@ -29,6 +29,12 @@ const Home: React.FC = () => {
       icon: '🔍'
     },
     {
+      title: 'AI Analysis',
+      description: 'Analyze artifacts with AI-powered tools',
+      action: () => navigate('/ai-analysis'),
+      icon: '🤖'
+    },
+    {
       title: 'Mint DOI',
       description: 'Register a DOI for your dataset',
       action: () => navigate('/doi'),
@@ -49,7 +55,7 @@ const Home: React.FC = () => {
         <SpaceBetween size="m">
           <Box variant="p">
             Aperture is an academic media repository for storing, managing, and sharing research
-            datasets with DOI minting and FAIR principles compliance.
+            datasets with DOI minting, AI-powered analysis, and FAIR principles compliance.
           </Box>
 
           <SpaceBetween direction="horizontal" size="s">
@@ -105,10 +111,14 @@ const Home: React.FC = () => {
             embargoed access
           </Box>
           <Box variant="p">
-            <strong>3. Mint a DOI:</strong> Register a persistent identifier for citation
+            <strong>3. Analyze with AI:</strong> Use AI tools to classify, describe, and extract
+            metadata from artifacts
           </Box>
           <Box variant="p">
-            <strong>4. Share:</strong> Collaborate with researchers worldwide
+            <strong>4. Mint a DOI:</strong> Register a persistent identifier for citation
+          </Box>
+          <Box variant="p">
+            <strong>5. Share:</strong> Collaborate with researchers worldwide
           </Box>
           <Box variant="p">
             Learn more in the{' '}

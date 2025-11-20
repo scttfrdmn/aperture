@@ -88,6 +88,70 @@ class ApiService {
     return response.data;
   }
 
+  // AI Analysis
+  async analyzeImage(bucket: string, key: string, prompt?: string) {
+    const response = await this.client.post('/ai/analyze-image', {
+      bucket,
+      key,
+      prompt: prompt || 'Analyze this image in detail for academic research purposes.'
+    });
+    return response.data;
+  }
+
+  async extractMetadata(bucket: string, key: string, schemaType?: 'artifact' | 'dataset') {
+    const response = await this.client.post('/ai/extract-metadata', {
+      bucket,
+      key,
+      schema_type: schemaType || 'artifact'
+    });
+    return response.data;
+  }
+
+  async classifyArtifact(bucket: string, key: string) {
+    const response = await this.client.post('/ai/classify-artifact', {
+      bucket,
+      key
+    });
+    return response.data;
+  }
+
+  async generateDescription(
+    bucket: string,
+    key: string,
+    style?: 'academic' | 'catalog' | 'public'
+  ) {
+    const response = await this.client.post('/ai/generate-description', {
+      bucket,
+      key,
+      style: style || 'academic'
+    });
+    return response.data;
+  }
+
+  async generateEmbeddings(bucket: string, key: string) {
+    const response = await this.client.post('/ai/generate-embeddings', {
+      bucket,
+      key
+    });
+    return response.data;
+  }
+
+  async extractText(bucket: string, key: string) {
+    const response = await this.client.post('/ai/extract-text', {
+      bucket,
+      key
+    });
+    return response.data;
+  }
+
+  async analyzeBatch(images: Array<{ bucket: string; key: string }>, operation: string) {
+    const response = await this.client.post('/ai/analyze-batch', {
+      images,
+      operation
+    });
+    return response.data;
+  }
+
   // Generic request method
   async request<T>(config: AxiosRequestConfig): Promise<T> {
     const response = await this.client.request<T>(config);

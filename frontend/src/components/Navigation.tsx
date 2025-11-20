@@ -20,6 +20,12 @@ const Navigation: React.FC = () => {
     { type: 'divider' },
     {
       type: 'section',
+      text: 'AI Analysis',
+      items: [{ type: 'link', text: 'Analyze Images', href: '/ai-analysis' }]
+    },
+    { type: 'divider' },
+    {
+      type: 'section',
       text: 'Management',
       items: [
         { type: 'link', text: 'DOI Registry', href: '/doi' },

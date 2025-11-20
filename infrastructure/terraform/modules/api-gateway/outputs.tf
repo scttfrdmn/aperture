@@ -108,6 +108,15 @@ output "routes" {
     doi_mint   = "POST /doi/mint"
     doi_update = "PUT /doi/{id}"
     doi_delete = "DELETE /doi/{id}"
+
+    # AI analysis routes (protected)
+    ai_analyze_image       = "POST /ai/analyze-image"
+    ai_extract_metadata    = "POST /ai/extract-metadata"
+    ai_classify_artifact   = "POST /ai/classify-artifact"
+    ai_generate_description = "POST /ai/generate-description"
+    ai_generate_embeddings = "POST /ai/generate-embeddings"
+    ai_extract_text        = "POST /ai/extract-text"
+    ai_analyze_batch       = "POST /ai/analyze-batch"
   }
 }
 
@@ -122,9 +131,9 @@ output "summary" {
     api_endpoint     = aws_apigatewayv2_api.main.api_endpoint
     stage_invoke_url = aws_apigatewayv2_stage.main.invoke_url
     stage_name       = aws_apigatewayv2_stage.main.name
-    total_routes     = 9
+    total_routes     = 16
     public_routes    = 2
-    protected_routes = 7
+    protected_routes = 14
     environment      = var.environment
     cors_enabled     = length(var.cors_allowed_origins) > 0
     custom_domain    = var.custom_domain_name != "" ? var.custom_domain_name : "none"
